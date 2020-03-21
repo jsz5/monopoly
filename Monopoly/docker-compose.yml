@@ -1,0 +1,36 @@
+version: "3.4"
+
+services:
+
+  monopoly-db:
+    image: postgres
+    restart: on-failure
+    container_name: monopoly-db
+    hostname: monopoly-db
+    ports:
+      - "54320:5432"
+    environment:
+      POSTGRES_DB: monopoly
+      POSTGRES_USER: monopoly
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - ../monopoly-devops/vol-pgsql:/var/lib/postgresql/data
+
+  monopoly-web:
+    container_name: monopoly-web
+    hostname: monopoly-web
+    restart: on-failure
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    command: >
+      bash -c "python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code:cached
+
+
+volumes:
+  vol-pgsql:
