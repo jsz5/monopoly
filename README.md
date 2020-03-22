@@ -29,7 +29,7 @@ Do odpalenia projektu trzeba pobrać dockera.
 #### Projekt
 
 - Wersja pythona: 3.8.2
-- Adres: http://localhost:8000
+- Adres: http://localhost:8080
 
 Konfiguracyjne rzeczy przychowujemy w pliku `settings_local.py`,
 którego nie dodajemy do gita.
