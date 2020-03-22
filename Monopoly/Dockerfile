@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     man \
     nodejs \
     npm \
-    && pip install django \
-    && pip install psycopg2 \
     && pip3 --no-cache-dir install -r /tmp/requirements.txt \
     && apt-get clean
-CMD tail -f /dev/null
+# CMD tail -f /dev/null

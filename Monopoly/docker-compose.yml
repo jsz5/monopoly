@@ -4,7 +4,6 @@ services:
 
   monopoly-db:
     image: postgres
-    restart: on-failure
     container_name: monopoly-db
     hostname: monopoly-db
     ports:
@@ -25,12 +24,13 @@ services:
       context: .
     command: >
       bash -c "python manage.py migrate
-      && python manage.py runserver 0.0.0.0:8000"
+      && python manage.py runserver 0.0.0.0:8080"
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
       - .:/code:cached
-
+    depends_on: 
+      - monopoly-db
 
 volumes:
   vol-pgsql:
