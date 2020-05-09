@@ -1,0 +1,402 @@
+[
+  {
+    "model": "api.field",
+    "pk": 1,
+    "fields": {
+      "name": "Start",
+      "price": null,
+      "field_type": 1,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 2,
+    "fields": {
+      "name": "1.1",
+      "price": 600,
+      "field_type": 7,
+      "zone": 1
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 3,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 4,
+    "fields": {
+      "name": "1.2",
+      "price": 600,
+      "field_type": 7,
+      "zone": 1
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 5,
+    "fields": {
+      "name": "Podatek",
+      "price": null,
+      "field_type": 4,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 6,
+    "fields": {
+      "name": "Transport",
+      "price": 2000,
+      "field_type": 9,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 7,
+    "fields": {
+      "name": "2.1",
+      "price": 1000,
+      "field_type": 7,
+      "zone": 2
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 8,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 9,
+    "fields": {
+      "name": "2.2",
+      "price": 1000,
+      "field_type": 7,
+      "zone": 2
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 10,
+    "fields": {
+      "name": "2.3",
+      "price": 1200,
+      "field_type": 7,
+      "zone": 2
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 11,
+    "fields": {
+      "name": "Wi\u0119zienie",
+      "price": null,
+      "field_type": 2,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 12,
+    "fields": {
+      "name": "3.1",
+      "price": 1400,
+      "field_type": 7,
+      "zone": 3
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 13,
+    "fields": {
+      "name": "Elektrowania",
+      "price": 1500,
+      "field_type": 8,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 14,
+    "fields": {
+      "name": "3.2",
+      "price": 1400,
+      "field_type": 7,
+      "zone": 3
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 15,
+    "fields": {
+      "name": "3.3",
+      "price": 1600,
+      "field_type": 7,
+      "zone": 3
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 16,
+    "fields": {
+      "name": "Transport 2",
+      "price": 2000,
+      "field_type": 9,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 17,
+    "fields": {
+      "name": "4.1",
+      "price": 1800,
+      "field_type": 7,
+      "zone": 4
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 18,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 19,
+    "fields": {
+      "name": "4.2",
+      "price": 1800,
+      "field_type": 7,
+      "zone": 4
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 20,
+    "fields": {
+      "name": "4.3",
+      "price": 2000,
+      "field_type": 7,
+      "zone": 4
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 21,
+    "fields": {
+      "name": "Puste",
+      "price": null,
+      "field_type": 6,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 22,
+    "fields": {
+      "name": "5.1",
+      "price": 2200,
+      "field_type": 7,
+      "zone": 5
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 23,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 24,
+    "fields": {
+      "name": "5.2",
+      "price": 2200,
+      "field_type": 7,
+      "zone": 5
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 25,
+    "fields": {
+      "name": "5.3",
+      "price": 2400,
+      "field_type": 7,
+      "zone": 5
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 26,
+    "fields": {
+      "name": "Transpor 3",
+      "price": 2000,
+      "field_type": 9,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 27,
+    "fields": {
+      "name": "6.1",
+      "price": 2600,
+      "field_type": 7,
+      "zone": 6
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 28,
+    "fields": {
+      "name": "6.2",
+      "price": 2600,
+      "field_type": 7,
+      "zone": 6
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 29,
+    "fields": {
+      "name": "Elektowania 2",
+      "price": 1500,
+      "field_type": 8,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 30,
+    "fields": {
+      "name": "6.3",
+      "price": 2800,
+      "field_type": 7,
+      "zone": 6
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 31,
+    "fields": {
+      "name": "Id\u017a do wi\u0119zienia",
+      "price": null,
+      "field_type": 5,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 32,
+    "fields": {
+      "name": "7.1",
+      "price": 3000,
+      "field_type": 7,
+      "zone": 7
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 33,
+    "fields": {
+      "name": "7.2",
+      "price": 3000,
+      "field_type": 7,
+      "zone": 7
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 34,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 35,
+    "fields": {
+      "name": "7.3",
+      "price": null,
+      "field_type": 7,
+      "zone": 7
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 36,
+    "fields": {
+      "name": "Transport 4",
+      "price": 2000,
+      "field_type": 9,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 37,
+    "fields": {
+      "name": "Karta",
+      "price": null,
+      "field_type": 3,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 38,
+    "fields": {
+      "name": "8.1",
+      "price": 3500,
+      "field_type": 7,
+      "zone": 8
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 39,
+    "fields": {
+      "name": "Podatek",
+      "price": null,
+      "field_type": 4,
+      "zone": null
+    }
+  },
+  {
+    "model": "api.field",
+    "pk": 40,
+    "fields": {
+      "name": "8.2",
+      "price": 4000,
+      "field_type": 7,
+      "zone": 8
+    }
+  }
+]
