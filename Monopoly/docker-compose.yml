@@ -3,7 +3,7 @@ version: "3.4"
 services:
 
   monopoly-db:
-    image: postgres
+    image: postgres:12
     container_name: monopoly-db
     hostname: monopoly-db
     ports:
@@ -24,7 +24,7 @@ services:
       context: .
     command: >
       bash -c "python manage.py migrate
-      && python manage.py runserver 0.0.0.0:8080"
+      && python manage.py runserver_plus 0.0.0.0:8080"
     ports:
       - "8080:8080"
     volumes:
