@@ -1,0 +1,65 @@
+[
+  {
+    "model": "api.action",
+    "pk": 1,
+    "fields": {
+      "name": "MOVE"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 2,
+    "fields": {
+      "name": "MOVE_TO"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 3,
+    "fields": {
+      "name": "PAY_USER"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 4,
+    "fields": {
+      "name": "PAY_BANK"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 5,
+    "fields": {
+      "name": "GET_OUT_JAIL"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 6,
+    "fields": {
+      "name": "PAY_FOR_ASSETS"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 7,
+    "fields": {
+      "name": "GET_MONEY_FROM_USERS"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 8,
+    "fields": {
+      "name": "GET_MONEY_FROM_BANK"
+    }
+  },
+  {
+    "model": "api.action",
+    "pk": 9,
+    "fields": {
+      "name": "MOVE_TO_AND_GET_MONEY_IF_START"
+    }
+  }
+]

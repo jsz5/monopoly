@@ -1,0 +1,83 @@
+[
+  {
+    "model": "api.fieldtype",
+    "pk": 1,
+    "fields": {
+      "name": "START",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 2,
+    "fields": {
+      "name": "JAIL",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 3,
+    "fields": {
+      "name": "CARD",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 4,
+    "fields": {
+      "name": "PAY",
+      "parameter": null,
+      "action": 4
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 5,
+    "fields": {
+      "name": "GO_TO_JAIL",
+      "parameter": null,
+      "action": 2
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 6,
+    "fields": {
+      "name": "EMPTY",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 7,
+    "fields": {
+      "name": "NORMAL_FIELD",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 8,
+    "fields": {
+      "name": "POWER_PLANT",
+      "parameter": null,
+      "action": null
+    }
+  },
+  {
+    "model": "api.fieldtype",
+    "pk": 9,
+    "fields": {
+      "name": "TRANSPORT",
+      "parameter": null,
+      "action": null
+    }
+  }
+]
