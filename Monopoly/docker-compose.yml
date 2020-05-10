@@ -14,23 +14,33 @@ services:
       POSTGRES_PASSWORD: 1234
     volumes:
       - ../monopoly-devops/vol-pgsql:/var/lib/postgresql/data
+    networks: 
+      - back-net
 
-  monopoly-web:
-    container_name: monopoly-web
-    hostname: monopoly-web
+  monopoly-back:
+    container_name: monopoly-back
+    hostname: monopoly-back
     restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
     command: >
       bash -c "python manage.py migrate
-      && python manage.py runserver_plus 0.0.0.0:8080"
+      && python manage.py runserver_plus 0.0.0.0:8000"
     ports:
-      - "8080:8080"
+      - "8000:8000"
     volumes:
       - .:/code:cached
     depends_on: 
       - monopoly-db
+    networks: 
+      - front_monopoly-net
+      - back-net
+
+networks: 
+  front_monopoly-net:
+    external: true
+  back-net:
 
 volumes:
   vol-pgsql:

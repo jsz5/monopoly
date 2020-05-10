@@ -1,0 +1,21 @@
+version: "3.4"
+
+services:
+  monopoly-front:
+    container_name: monopoly-front
+    restart: on-failure
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    command: >
+      sh -c "npm run serve"
+    ports:
+    - "8080:8080"
+    volumes:
+      - .:/code:cached
+    networks:
+      monopoly-net:
+
+networks:
+  monopoly-net:
+    driver: bridge
