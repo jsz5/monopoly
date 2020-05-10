@@ -1,0 +1,66 @@
+[
+  {
+    "model": "api.zone",
+    "pk": 1,
+    "fields": {
+      "name": "Strefa 1",
+      "price_per_house": 500
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 2,
+    "fields": {
+      "name": "Strefa 2 ",
+      "price_per_house": 500
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 3,
+    "fields": {
+      "name": "Strefa 3 ",
+      "price_per_house": 1000
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 4,
+    "fields": {
+      "name": "Strefa 4",
+      "price_per_house": 1000
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 5,
+    "fields": {
+      "name": "Strefa 5",
+      "price_per_house": 1500
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 6,
+    "fields": {
+      "name": "Strefa 6",
+      "price_per_house": 1500
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 7,
+    "fields": {
+      "name": "Strefa 7",
+      "price_per_house": 2000
+    }
+  },
+  {
+    "model": "api.zone",
+    "pk": 8,
+    "fields": {
+      "name": "Strefa 8 ",
+      "price_per_house": 2000
+    }
+  }
+]

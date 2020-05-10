@@ -4,21 +4,6 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 
 
-class Estate(models.Model):
-    fee_zero_houses = models.IntegerField(verbose_name=_("Czynsz za zero posiadłości"))
-    fee_one_house = models.IntegerField(verbose_name=_("Czynsz za jedną posiadłość"))
-    fee_two_houses = models.IntegerField(verbose_name=_("Czynsz za dwie posiadłości"))
-    fee_three_houses = models.IntegerField(verbose_name=_("Czynsz za trzy posiadłości"))
-    fee_four_houses = models.IntegerField(
-        verbose_name=_("Czynsz za cztery posiadłości")
-    )
-    fee_five_houses = models.IntegerField(verbose_name=_("Czynsz za pięć posiadłości"))
-    fee_six_houses = models.IntegerField(verbose_name=_("Czynsz za sześć posiadłości"))
-
-    class Meta:
-        verbose_name = _("Posiadłości")
-
-
 class Zone(models.Model):
     name = models.CharField(verbose_name=_("Nazwa dzielnicy"), max_length=255)
     price_per_house = models.IntegerField(verbose_name=_("Cena za domek"))
@@ -36,12 +21,13 @@ class Action(models.Model):
 
 class FieldType(models.Model):
     name = models.CharField(verbose_name=_("Nazwa typu pola"), max_length=255)
-    parameter = JSONField(verbose_name=_("Parametry typu pola"))
+    parameter = JSONField(verbose_name=_("Parametry typu pola"), null=True, blank=True)
     action = models.ForeignKey(
         Action,
         related_name="field_types",
         on_delete=models.CASCADE,
         verbose_name=_("Akcja"),
+        null=True, blank=True
     )
 
     class Meta:
@@ -60,6 +46,7 @@ class Card(models.Model):
 
 
 class Field(models.Model):
+    name = models.CharField(verbose_name=_("Nazwa pola"), max_length=255, null=True, blank=True)
     price = models.IntegerField(verbose_name=_("Cena za pole"), null=True, blank=True)
     field_type = models.ForeignKey(
         FieldType,
@@ -72,13 +59,31 @@ class Field(models.Model):
         related_name="fields",
         on_delete=models.CASCADE,
         verbose_name=_("Dzielnica"),
-    )
-    estate = models.OneToOneField(
-        Estate, on_delete=models.CASCADE, related_name="estate"
+        null=True, blank=True
     )
 
     class Meta:
         verbose_name = _("Pole")
+
+
+class Estate(models.Model):
+    field = models.ForeignKey(
+        Field,
+        related_name="estates",
+        on_delete=models.CASCADE,
+        verbose_name=_("Pole"),
+    )
+    fee_zero_houses = models.IntegerField(verbose_name=_("Czynsz za zero posiadłości"))
+    fee_one_house = models.IntegerField(verbose_name=_("Czynsz za jedną posiadłość"))
+    fee_two_houses = models.IntegerField(verbose_name=_("Czynsz za dwie posiadłości"))
+    fee_three_houses = models.IntegerField(verbose_name=_("Czynsz za trzy posiadłości"))
+    fee_four_houses = models.IntegerField(
+        verbose_name=_("Czynsz za cztery posiadłości")
+    )
+    fee_five_houses = models.IntegerField(verbose_name=_("Czynsz za pięć posiadłości"))
+
+    class Meta:
+        verbose_name = _("Posiadłości")
 
 
 class Transaction(models.Model):
@@ -146,3 +151,11 @@ class Asset(models.Model):
 
     class Meta:
         verbose_name = _("Posiadłości")
+
+
+class Messages(models.Model):
+    type = models.CharField(verbose_name=_("Nazwa typu pola"), max_length=255)
+    parameter = JSONField(verbose_name=_("Parametry typu pola"))
+
+    class Meta:
+        verbose_name = _("Wiadomośći")
