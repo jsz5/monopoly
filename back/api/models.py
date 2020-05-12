@@ -128,6 +128,8 @@ class PlayingUser(models.Model):
         related_name="playing_users",
         on_delete=models.CASCADE,
         verbose_name=_("Pole"),
+        null=True,
+        blank=True
     )
 
     class Meta:
