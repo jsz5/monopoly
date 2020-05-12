@@ -33,6 +33,10 @@ class FieldType(models.Model):
     class Meta:
         verbose_name = _("Typ pola")
 
+    @property
+    def get_field(self):
+        return self.fields.filter(field_type=self).first()
+
 
 class Card(models.Model):
     description = models.TextField(verbose_name=_("Opis karty"))
@@ -64,6 +68,7 @@ class Field(models.Model):
 
     class Meta:
         verbose_name = _("Pole")
+
 
 
 class Estate(models.Model):

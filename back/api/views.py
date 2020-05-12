@@ -9,8 +9,9 @@ from rest_framework.generics import (
 from rest_framework.views import APIView
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
-from api.models import PlayingUser
+from api.models import PlayingUser, FieldType
 from rest_auth.serializers import LoginSerializer
+import random
 
 
 class Test(GenericAPIView):
@@ -20,11 +21,27 @@ class Test(GenericAPIView):
 
 class PlayingUserReadyUpdateView(APIView):
     queryset = PlayingUser.objects.all()
+    serializer_class = None
 
     def put(self, request, format=None):
-        request.user.isActive = True
-        print(request.user)
-        return Response(request.user.id)
+        user = PlayingUser.objects.filter(user=request.user).first()
+        user.isActive = True
+        user.save()
+        if PlayingUser.objects.filter(isActive=True).count() == 4:
+            playing_order = list(PlayingUser.objects.filter(isActive=True))
+            random.shuffle(playing_order)
+            start_field = FieldType.objects.filter(name="START").first().get_field
+            for place, playing_user in enumerate(playing_order):
+                if place == 0:
+                    playing_user.isPlaying = True
+                playing_user.place = place + 1
+                playing_user.field = start_field
+                playing_user.budget = 15000
+                playing_user.save()
+            # todo: gra rozpoczyna się  - event
+            return Response("Gra rozpoczęta.")
+
+        return Response("Gracz jest gotowy do gry.")
 
 
 class Login(CreateAPIView):
