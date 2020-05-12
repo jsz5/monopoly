@@ -37,7 +37,7 @@ class PlayingUserReadyUpdateView(APIView):
                 playing_user.field=start_field
                 playing_user.budget=15000
                 playing_user.save()
-            # todo: gra rozpoczyna się automatycznie - event
+            # todo: gra rozpoczyna się  - event
             return Response("Gra rozpoczęta.")
 
         return Response("Gracz jest gotowy do gry.")
