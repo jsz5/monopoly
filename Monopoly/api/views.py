@@ -21,6 +21,7 @@ class Test(GenericAPIView):
 
 class PlayingUserReadyUpdateView(APIView):
     queryset = PlayingUser.objects.all()
+    serializer_class = None
 
     def put(self, request, format=None):
         user = PlayingUser.objects.filter(user=request.user).first()
@@ -34,8 +35,8 @@ class PlayingUserReadyUpdateView(APIView):
                 if place == 0:
                     playing_user.isPlaying = True
                 playing_user.place = place + 1
-                playing_user.field=start_field
-                playing_user.budget=15000
+                playing_user.field = start_field
+                playing_user.budget = 15000
                 playing_user.save()
             # todo: gra rozpoczyna się  - event
             return Response("Gra rozpoczęta.")
