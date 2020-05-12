@@ -7,3 +7,5 @@ sqlparse==0.3.1
 Werkzeug==1.0.1
 djangorestframework==3.11.0
 drf-yasg==1.17.1
+django-rest-auth==0.9.5
+django-allauth==0.41.0
