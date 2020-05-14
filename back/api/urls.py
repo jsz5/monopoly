@@ -10,9 +10,9 @@ urlpatterns = [
     path("", schema_view.with_ui("swagger", cache_timeout=None), name="schema-swagger-ui"),
     path("rest-auth/", include("rest_auth.urls")),
     path("rest-auth/registration/", include("rest_auth.registration.urls")),
-    path("test/", views.Test.as_view(), name="test"),
-    path("player-ready/", views.PlayingUserReadyUpdateView.as_view(), name="player-ready"),
     path("login/", views.Login.as_view(), name="login"),
-    path("logout/", views.Logout.as_view(), name="logout")
+    path("logout/", views.Logout.as_view(), name="logout"),
+    path("playing-user-ready/", views.PlayingUserReadyUpdateView.as_view(), name="playing-user-ready"),
+    path("playing-users/", views.PlayingUserListView.as_view(), name="playing-users"),
 
 ]

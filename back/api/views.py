@@ -3,7 +3,8 @@ import json
 from rest_framework.response import Response
 from rest_framework.generics import (
     GenericAPIView,
-    CreateAPIView
+    CreateAPIView,
+    ListAPIView
 
 )
 from rest_framework import status
@@ -15,10 +16,7 @@ from rest_auth.serializers import LoginSerializer
 from rest_auth.views import LogoutView
 import random
 
-
-class Test(GenericAPIView):
-    def get(self, request, *args, **kwargs):
-        return Response("test")
+from api.serializers import PlayingUserSerializer
 
 
 class PlayingUserReadyUpdateView(APIView):
@@ -77,6 +75,11 @@ class Logout(LogoutView):
     def post(self, request, *args, **kwargs):
         user = request.user
         response = super().post(request, *args, **kwargs)
-        if  response.status_code == status.HTTP_200_OK:
+        if response.status_code == status.HTTP_200_OK:
             PlayingUser.objects.filter(user_id=user.id).delete()
         return response
+
+
+class PlayingUserListView(ListAPIView):
+    serializer_class = PlayingUserSerializer
+    queryset = PlayingUser.objects.all()
