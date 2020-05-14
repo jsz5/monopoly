@@ -6,11 +6,13 @@ from rest_framework.generics import (
     CreateAPIView
 
 )
+from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
 from api.models import PlayingUser, FieldType
 from rest_auth.serializers import LoginSerializer
+from rest_auth.views import LogoutView
 import random
 
 
@@ -69,3 +71,12 @@ class Login(CreateAPIView):
         #     gracze z tabeli mogą rozpocząć grę (przycisk ROZPOCZNIJ GRĘ jest dostępny) - event
         #   if PlayingUser.objects.all().count() >= 4:
         #     gra rozpoczyna się automatycznie - event
+
+
+class Logout(LogoutView):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        response = super().post(request, *args, **kwargs)
+        if  response.status_code == status.HTTP_200_OK:
+            PlayingUser.objects.filter(user_id=user.id).delete()
+        return response
