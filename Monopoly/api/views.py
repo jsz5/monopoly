@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
-from api.models import PlayingUser, FieldType
+from api.models import PlayingUser, FieldType, Field, Messages
 from rest_auth.serializers import LoginSerializer
 from rest_auth.views import LogoutView
 import random
@@ -83,3 +83,17 @@ class Logout(LogoutView):
 class PlayingUserListView(ListAPIView):
     serializer_class = PlayingUserSerializer
     queryset = PlayingUser.objects.all()
+
+
+class DiceRollView(ListAPIView):
+    def get(self, request, *args, **kwargs):
+        dice = random.randint(1, 6)
+        user = PlayingUser.objects.filter(isPlaying=True).first()
+        user.place=(user.place + dice) % Field.objects.all().count()
+        user.save()
+        message = {
+            "user": user.id,
+            "field": user.place
+        }
+        Messages(type="move", parameter=message).save()
+        return Response({"number": dice})

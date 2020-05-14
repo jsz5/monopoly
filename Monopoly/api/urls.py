@@ -14,5 +14,6 @@ urlpatterns = [
     path("logout/", views.Logout.as_view(), name="logout"),
     path("playing-user-ready/", views.PlayingUserReadyUpdateView.as_view(), name="playing-user-ready"),
     path("playing-users/", views.PlayingUserListView.as_view(), name="playing-users"),
+    path("dice-roll/", views.DiceRollView.as_view(), name="dice-roll"),
 
 ]
