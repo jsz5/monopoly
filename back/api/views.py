@@ -1,22 +1,17 @@
 import json
 
 from rest_framework.response import Response
-from rest_framework.generics import (
-    GenericAPIView,
-    CreateAPIView,
-    ListAPIView
-
-)
+from rest_framework.generics import GenericAPIView, CreateAPIView, ListAPIView
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
-from api.models import PlayingUser, FieldType, Field, Messages
+from api.models import PlayingUser, FieldType, Field, Messages, Asset, Estate
 from rest_auth.serializers import LoginSerializer
 from rest_auth.views import LogoutView
 import random
 
-from api.serializers import PlayingUserSerializer
+from api.serializers import PlayingUserSerializer, EstateSerializer
 
 
 class PlayingUserReadyUpdateView(APIView):
@@ -50,8 +45,8 @@ class Login(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         validated_data = self.serializer_class(json.loads(request.body)).data
-        username = validated_data['username']
-        password = validated_data['password']
+        username = validated_data["username"]
+        password = validated_data["password"]
         user = auth.authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
@@ -89,11 +84,65 @@ class DiceRollView(ListAPIView):
     def get(self, request, *args, **kwargs):
         dice = random.randint(1, 6)
         user = PlayingUser.objects.filter(isPlaying=True).first()
-        user.place=(user.place + dice) % Field.objects.all().count()
+        user.place = (user.place + dice) % Field.objects.all().count()
         user.save()
-        message = {
-            "user": user.id,
-            "field": user.place
-        }
+        message = {"user": user.id, "field": user.place}
         Messages(type="move", parameter=message).save()
         return Response({"number": dice})
+
+
+class BoardView(ListAPIView):
+    def get(self, request, *args, **kwargs):
+        d = {}
+        for obj in Field.objects.all():
+            d[obj.pk] = {
+                "name": obj.name,
+                "type": obj.field_type.name,
+                "price": obj.price,
+                "zone": obj.zone.pk if obj.zone else None,
+                "owner": None,
+            }
+        for user in PlayingUser.objects.filter(isPlaying=True):
+            if "users" in d[user.field.pk]:
+                d[user.field.pk]["users"].append(user.pk)
+            else:
+                d[user.field.pk]["users"] = [user.pk]
+
+        for asset in Asset.objects.filter(playingUser__isPlaying=True):
+            d[asset.field.pk]["owner"] = asset.playingUser.pk
+            d[asset.field.pk]["isPledged"] = asset.isPledged
+            d[asset.field.pk]["houses"] = (
+                asset.estateNumber if asset.estateNumber else 0
+            )
+
+        return Response(d)
+
+
+class FieldView(ListAPIView):
+    def get(self, request, *args, **kwargs):
+
+        try:
+            estate = Estate.objects.get(field=self.kwargs["pk"])
+        except Estate.DoesNotExist:
+            return Response("")
+        d = EstateSerializer(estate).data
+
+        d["id"] = estate.field.pk
+        d["name"] = estate.field.name
+        d["type"] = estate.field.field_type.name
+        d["price"] = estate.field.price
+        d["zone"] = estate.field.zone.pk if estate.field.zone else None
+        d["owner"] = None
+
+        for user in PlayingUser.objects.filter(isPlaying=True, field=estate.field):
+            if "users" in d[user.field.pk]:
+                d[user.field.pk]["users"].append(user.pk)
+            else:
+                d[user.field.pk]["users"] = [user.pk]
+
+        for asset in Asset.objects.filter(playingUser__isPlaying=True):
+            d["owner"] = asset.playingUser.pk
+            d["isPledged"] = asset.isPledged
+            d["houses"] = asset.estateNumber if asset.estateNumber else 0
+
+        return Response(d)

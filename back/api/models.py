@@ -27,7 +27,8 @@ class FieldType(models.Model):
         related_name="field_types",
         on_delete=models.CASCADE,
         verbose_name=_("Akcja"),
-        null=True, blank=True
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -50,7 +51,9 @@ class Card(models.Model):
 
 
 class Field(models.Model):
-    name = models.CharField(verbose_name=_("Nazwa pola"), max_length=255, null=True, blank=True)
+    name = models.CharField(
+        verbose_name=_("Nazwa pola"), max_length=255, null=True, blank=True
+    )
     price = models.IntegerField(verbose_name=_("Cena za pole"), null=True, blank=True)
     field_type = models.ForeignKey(
         FieldType,
@@ -63,20 +66,17 @@ class Field(models.Model):
         related_name="fields",
         on_delete=models.CASCADE,
         verbose_name=_("Dzielnica"),
-        null=True, blank=True
+        null=True,
+        blank=True,
     )
 
     class Meta:
         verbose_name = _("Pole")
 
 
-
 class Estate(models.Model):
     field = models.ForeignKey(
-        Field,
-        related_name="estates",
-        on_delete=models.CASCADE,
-        verbose_name=_("Pole"),
+        Field, related_name="estates", on_delete=models.CASCADE, verbose_name=_("Pole"),
     )
     fee_zero_houses = models.IntegerField(verbose_name=_("Czynsz za zero posiadłości"))
     fee_one_house = models.IntegerField(verbose_name=_("Czynsz za jedną posiadłość"))
@@ -134,7 +134,7 @@ class PlayingUser(models.Model):
         on_delete=models.CASCADE,
         verbose_name=_("Pole"),
         null=True,
-        blank=True
+        blank=True,
     )
 
     class Meta:
@@ -152,9 +152,11 @@ class Asset(models.Model):
         Field, related_name="assets", on_delete=models.CASCADE, verbose_name=_("Pole")
     )
     estateNumber = models.IntegerField(
-        verbose_name=_("Liczba domków"), null=True, blank=True
+        verbose_name=_("Liczba domków"), null=True, blank=True, default=0
     )
-    isPledged = models.BooleanField(verbose_name=_("Zastawiona nieruchomość"), default=False)
+    isPledged = models.BooleanField(
+        verbose_name=_("Zastawiona nieruchomość"), default=False
+    )
 
     class Meta:
         verbose_name = _("Posiadłości")
