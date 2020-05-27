@@ -7,11 +7,7 @@ RUN mkdir /code
 COPY ./requirements/requirements.txt /tmp/requirements.txt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    vim \
     nano \
-    man \
-    nodejs \
-    npm \
     && pip3 --no-cache-dir install -r /tmp/requirements.txt \
     && apt-get clean
 
