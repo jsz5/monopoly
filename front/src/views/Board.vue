@@ -1,5 +1,5 @@
 <template>
-  
+  <p>board</p>
 </template>
 
 <script>
