@@ -44,7 +44,7 @@ class Login(CreateAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        validated_data = self.serializer_class(json.loads(request.body)).data
+        validated_data = self.serializer_class(request.data).data
         username = validated_data["username"]
         password = validated_data["password"]
         user = auth.authenticate(username=username, password=password)
