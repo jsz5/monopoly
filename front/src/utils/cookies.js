@@ -43,7 +43,9 @@ const deleteToken = () => {
     document.cookie = TOKEN+'=; Max-Age=-99999999;';
 }
 
-export {getCookie, setCookie}
-export {getToken, setToken}
+export {getCookie}
+export {setCookie}
+export {getToken}
+export {setToken}
 export {checkToken}
 export {deleteToken}
