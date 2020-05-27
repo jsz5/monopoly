@@ -57,7 +57,8 @@ class Login(CreateAPIView):
         return Response("Invalid username or password", status=401)
 
     def __add_playing_user(self, user):
-        PlayingUser(user=user).save()
+        if PlayingUser.objects.filter(user=user).count()==0:
+            PlayingUser(user=user).save()
         # todo: dodać jak będą channele
         # if not PlayingUser.objects.filter(isPlaying=True).first():
         #   if PlayingUser.objects.all().count() >= 2:
