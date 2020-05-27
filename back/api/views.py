@@ -54,8 +54,7 @@ class Login(CreateAPIView):
                 token, created = Token.objects.get_or_create(user=user)
                 self.__add_playing_user(user)
                 return Response({"key": token.key})
-        raise Exception("Invalid username or password")
- 
+        return Response("Invalid username or password", status=401)
 
     def __add_playing_user(self, user):
         PlayingUser(user=user).save()
