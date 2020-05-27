@@ -1,5 +1,5 @@
 import axios from "axios";
-import {getToken, setToken} from "./cookies"
+import {getToken} from "./cookies"
 
 axios.defaults.headers.common = {
     'Authorization': 'Bearer ' + getToken()

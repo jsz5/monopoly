@@ -24,7 +24,6 @@
     import axios from 'axios'
     import baseUrl from "../config";
     import {setToken} from "../utils/cookies"
-    import router from "../router/index"
 
     export default {
         name: "Login",
@@ -47,7 +46,7 @@
                     .then(response => {
                         setToken(response.data.key)
                         console.log(response.data.key);
-                        router.push('/start-game')
+                        this.$router.push('/start-game')
                     })
                     .catch(error => {
                         console.log(error);

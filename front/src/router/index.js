@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Login from "../views/Login.vue";
+// import Login from "../views/Login.vue";
 import PageNotFound from "../views/PageNotFound";
 
 Vue.use(VueRouter);
@@ -9,7 +9,7 @@ const routes = [
   {
     path: "/",
     name: "Login",
-    component: Login
+    component: () => import("../views/Login.vue")
   },
   {
     path: "/start-game",
