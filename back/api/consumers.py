@@ -12,7 +12,6 @@ import random
 class LobbyConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
-        print(self.scope["user"])
         self.user = User.objects.filter(username=self.scope["user"]).first()
         self.lobby_group_name = 'game'
 
@@ -26,13 +25,24 @@ class LobbyConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        print(text_data_json)
-
-        self.__check_game_availability()
+        print(f"RECEIVE {text_data_json['type']}")
+        if text_data_json['type'] == 'joined':
+            self.__check_game_availability()
+        elif text_data_json['type'] == 'start_clicked':
+            user = PlayingUser.objects.filter(user=self.user).first()
+            user.isActive = True
+            user.save()
+            async_to_sync(self.channel_layer.group_send)(
+                self.lobby_group_name, {
+                    'type': 'lobby_message',
+                    'message': 'check'
+                }
+            )
 
     def __add_playing_user(self):
-        # todo: nie dodawać podwórjnie etc.
-        PlayingUser(user=self.user).save()
+        print(PlayingUser.objects.filter(user=self.user).count())
+        if PlayingUser.objects.filter(user=self.user).count() == 0:
+            PlayingUser(user=self.user).save()
 
     def __check_game_availability(self):
         if not PlayingUser.objects.filter(isPlaying=True).first():
@@ -41,16 +51,7 @@ class LobbyConsumer(WebsocketConsumer):
             active_users = PlayingUser.objects.filter(isActive=True).count()
             print(active_users)
 
-            if 2 <= all_users < 4:
-                print('two or three players')
-                # gracze z tabeli mogą rozpocząć grę (przycisk ROZPOCZNIJ GRĘ jest dostępny) - event
-                async_to_sync(self.channel_layer.group_send)(
-                    self.lobby_group_name, {
-                        'type': 'lobby_message',
-                        'message': 'load'
-                    }
-                )
-            elif all_users == 4 or active_users == all_users:
+            if all_users == 4 or active_users == all_users:
                 # gra rozpoczyna się automatycznie - event
                 print('four players')
                 async_to_sync(self.channel_layer.group_send)(
@@ -59,12 +60,21 @@ class LobbyConsumer(WebsocketConsumer):
                         'message': 'start'
                     }
                 )
+            elif 2 <= all_users < 4:
+                print('two or three players')
+                # gracze z tabeli mogą rozpocząć grę (przycisk ROZPOCZNIJ GRĘ jest dostępny) - event
+                async_to_sync(self.channel_layer.group_send)(
+                    self.lobby_group_name, {
+                        'type': 'lobby_message',
+                        'message': 'load'
+                    }
+                )
 
     # Receive message from room group
     def lobby_message(self, event):
         message = event['message']
 
-        print(message)
+        print(f"Lobby {message}")
 
         if message == 'start':
             user = PlayingUser.objects.filter(user=self.user).first()
@@ -81,7 +91,9 @@ class LobbyConsumer(WebsocketConsumer):
                 playing_user.field = start_field
                 playing_user.budget = 15000
                 playing_user.save()
-
+        elif message == 'check':
+            self.__check_game_availability()
+            return
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message

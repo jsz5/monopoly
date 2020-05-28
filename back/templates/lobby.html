@@ -29,12 +29,19 @@
             };
         };
 
+        document.querySelector('#start_button').onclick = function(e) {
+            lobbySocket.send(JSON.stringify({
+                'type' : 'start_clicked',
+            }));
+
+
+            window.location.pathname = '/board/' + boardName + '/';
+        };
+
         function sendText() {
           // Construct a msg object containing the data the server needs to process the message from the chat client.
           var msg = {
-            type: "message",
-            text: 'join',
-            {#id:   clientID,#}
+            type: "joined",
             date: Date.now()
           };
 
