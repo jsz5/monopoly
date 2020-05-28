@@ -1,28 +1,42 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app>
+    <v-content>
+      <v-btn v-if="!auth" @click="login">Zaloguj</v-btn>
+      <v-btn v-else @click="logout">Wyloguj</v-btn>
+      <router-view/>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    import {checkToken, deleteToken} from "./utils/cookies"
+    import axiosSession from "./utils/axiosSession"
+    import baseUrl from "./config";
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+    export default {
+        name: "App",
+
+        data: () => ({
+            auth: false
+        }),
+        mounted() {
+            this.auth = checkToken()
+            if (!this.auth) {
+                this.$router.push('/')
+            }
+        },
+        methods: {
+            login() {
+                window.location.href = '/#/';
+            },
+            logout() {
+                axiosSession.post(baseUrl + '/api/logout/').then(() => {
+                  deleteToken();
+                  location.reload()
+                }).catch(error => {
+                  console.error(error);
+                })
+            }
+        }
+    };
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

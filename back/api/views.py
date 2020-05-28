@@ -25,10 +25,12 @@ class PlayingUserReadyUpdateView(APIView):
     serializer_class = None
 
     def put(self, request, format=None):
-        user = PlayingUser.objects.filter(user=request.user).first()
+        user = PlayingUser.objects.get(user=request.user)
         user.isActive = True
         user.save()
-        if PlayingUser.objects.filter(isActive=True).count() == 4:
+        all_users = PlayingUser.objects.count()
+        active_users = PlayingUser.objects.filter(isActive=True).count()
+        if active_users == 4 or active_users == all_users:
             playing_order = list(PlayingUser.objects.filter(isActive=True))
             random.shuffle(playing_order)
             start_field = FieldType.objects.filter(name="START").first().get_field
@@ -39,10 +41,9 @@ class PlayingUserReadyUpdateView(APIView):
                 playing_user.field = start_field
                 playing_user.budget = 15000
                 playing_user.save()
-            # todo: gra rozpoczyna się  - event
-            return Response("Gra rozpoczęta.")
+            return Response({"show_board": True, "message": "Gra rozpoczęta."})
 
-        return Response("Gracz jest gotowy do gry.")
+        return Response({"show_board": False, "message": "Gracz jest gotowy do gry."})
 
 
 class Login(CreateAPIView):
@@ -50,7 +51,7 @@ class Login(CreateAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        validated_data = self.serializer_class(json.loads(request.body)).data
+        validated_data = self.serializer_class(request.data).data
         username = validated_data["username"]
         password = validated_data["password"]
         user = auth.authenticate(username=username, password=password)
@@ -58,18 +59,20 @@ class Login(CreateAPIView):
             if user.is_active:
                 auth.login(request, user)
                 token, created = Token.objects.get_or_create(user=user)
-                self.__add_playing_user(user)
-                return Response({"key": token.key})
-        return Response("Invalid username or password")
+                start_game_button = self.__add_playing_user(user)
+                number_of_users = PlayingUser.objects.count()
+                return Response(
+                    {"key": token.key, "start_game_button": start_game_button, "number_of_users": number_of_users}
+                )
+        return Response("Invalid username or password", status=401)
 
     def __add_playing_user(self, user):
-        PlayingUser(user=user).save()
-        # todo: dodać jak będą channele
-        # if not PlayingUser.objects.filter(isPlaying=True).first():
-        #   if PlayingUser.objects.all().count() >= 2:
-        #     gracze z tabeli mogą rozpocząć grę (przycisk ROZPOCZNIJ GRĘ jest dostępny) - event
-        #   if PlayingUser.objects.all().count() >= 4:
-        #     gra rozpoczyna się automatycznie - event
+        if PlayingUser.objects.filter(user=user).count() == 0:
+            PlayingUser(user=user).save()
+        if not PlayingUser.objects.filter(isPlaying=True).first():
+            if PlayingUser.objects.all().count() >= 2:
+                return True  # gracze z tabeli mogą rozpocząć grę (przycisk ROZPOCZNIJ GRĘ jest dostępny) - event
+        return False
 
 
 class Logout(LogoutView):

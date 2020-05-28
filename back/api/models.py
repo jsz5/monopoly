@@ -155,6 +155,7 @@ class PlayingUser(models.Model):
         related_name="playing_users",
         on_delete=models.CASCADE,
         verbose_name=_("Sprzedający"),
+        unique=True
     )
     place = models.IntegerField(verbose_name=_("Kolejność"), null=True, blank=True)
     isActive = models.BooleanField(verbose_name=_("Aktywyny ruch"), default=False)
