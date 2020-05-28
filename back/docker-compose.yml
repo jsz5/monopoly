@@ -29,6 +29,8 @@ services:
       && python manage.py runserver_plus 0.0.0.0:8000"
     ports:
       - "8000:8000"
+    links:
+      - redis:redis
     volumes:
       - .:/code:cached
     depends_on: 
@@ -37,6 +39,15 @@ services:
       - front_monopoly-net
       - back-net
 
+  redis:
+    restart: always
+    image: redis:latest
+    expose:
+      - "6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - back-net
 networks: 
   front_monopoly-net:
     external: true
@@ -44,3 +55,4 @@ networks:
 
 volumes:
   vol-pgsql:
+  redisdata:

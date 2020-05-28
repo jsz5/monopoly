@@ -24,4 +24,6 @@ urlpatterns = [
     path("dice-roll/", views.DiceRollView.as_view(), name="dice-roll"),
     path("board/", views.BoardView.as_view(), name="board"),
     path("field/<int:pk>/", views.FieldView.as_view(), name="board"),
+    path("lobby", views.LobbyView.as_view(), name='lobby'),
+    path("game", views.GameView.as_view(), name='game'),
 ]

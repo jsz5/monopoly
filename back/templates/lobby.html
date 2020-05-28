@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-lg-12">
+        <h3>Welcome to Lobby!</h3>
+        <hr>
+    </div>
+    <button id="start_button" style="visibility: hidden">Start game</button>
+    <h3 id="start_string" style="visibility: hidden">GAME START</h3>
+
+    <script>
+        const lobbySocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/lobby/'
+        );
+        lobbySocket.onopen = () => sendText();
+
+        lobbySocket.onmessage = function(event) {
+            var msg = JSON.parse(event.data);
+            console.log(msg)
+            switch(msg.message) {
+                case "load":
+                    document.getElementById("start_button").style.visibility = 'visible';
+                    break;
+                case "start":
+                    document.getElementById("start_string").style.visibility = 'visible';
+                    window.location.pathname = 'api/board/';
+                    break;
+
+            };
+        };
+
+        function sendText() {
+          // Construct a msg object containing the data the server needs to process the message from the chat client.
+          var msg = {
+            type: "message",
+            text: 'join',
+            {#id:   clientID,#}
+            date: Date.now()
+          };
+
+          // Send the msg object as a JSON-formatted string.
+          lobbySocket.send(JSON.stringify(msg));
+        }
+    </script>
+
+</div>

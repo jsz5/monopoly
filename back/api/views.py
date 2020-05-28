@@ -11,7 +11,13 @@ from rest_auth.serializers import LoginSerializer
 from rest_auth.views import LogoutView
 import random
 
+from django.http import HttpResponse
+
 from api.serializers import PlayingUserSerializer, EstateSerializer
+
+from django.views.generic import CreateView, TemplateView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 
 class PlayingUserReadyUpdateView(APIView):
@@ -84,12 +90,77 @@ class DiceRollView(ListAPIView):
     def get(self, request, *args, **kwargs):
         dice = random.randint(1, 6)
         user = PlayingUser.objects.filter(isPlaying=True).first()
+        print(user)
         user.place = (user.place + dice) % Field.objects.all().count()
         user.save()
         message = {"user": user.id, "field": user.place}
         Messages(type="move", parameter=message).save()
         return Response({"number": dice})
 
+class LobbyView(TemplateView):
+    template_name = 'lobby.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+# class GameView(TemplateView):
+#     template_name = 'game.html'
+#
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         # kwargs['game_id']
+#         self.game = Game.get_by_id(1)  # kwargs['board_name']
+#
+#         print(kwargs['board_name'])
+#         print(self.game)
+#         # context['board_name'] = Article.objects.all()[:5]
+#         # get the game by the id
+#         # self.game = Game.get_by_id(kwargs['game_id'])
+#         # user = get_user(request)
+#
+#         return super().dispatch(*args, **kwargs)
+#
+#     def __add_playing_user(self, user):
+#         PlayingUser(user=user).save()
+
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+
+
+class GameView(TemplateView):
+    template_name = 'game.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request):
+        print(request)
+        d = {}
+        for obj in Field.objects.all():
+            d[obj.pk] = {
+                "name": obj.name,
+                "type": obj.field_type.name,
+                "price": obj.price,
+                "zone": obj.zone.pk if obj.zone else None,
+                "owner": None,
+            }
+        for user in PlayingUser.objects.filter(isPlaying=True):
+            if "users" in d[user.field.pk]:
+                d[user.field.pk]["users"].append(user.pk)
+            else:
+                d[user.field.pk]["users"] = [user.pk]
+
+        for asset in Asset.objects.filter(playingUser__isPlaying=True):
+            d[asset.field.pk]["owner"] = asset.playingUser.pk
+            d[asset.field.pk]["isPledged"] = asset.isPledged
+            d[asset.field.pk]["houses"] = (
+                asset.estateNumber if asset.estateNumber else 0
+            )
+
+        return HttpResponse(d)
 
 class BoardView(ListAPIView):
     def get(self, request, *args, **kwargs):
