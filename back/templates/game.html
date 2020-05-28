@@ -1,0 +1,53 @@
+<div class="row">
+    <div class="col-lg-12">
+        <h3>Welcome to MONOPOLY!</h3>
+        <hr>
+    </div>
+    <button id="start_button" style="visibility: hidden">Start game</button>
+    <h3 id="start_string">GAME MONOPOLY</h3>
+
+    {% if d %}
+
+        {% for field in d %}
+            <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+        {% endfor %}
+    {% else %}
+        <p>No polls are available.</p>
+    {% endif %}
+
+    <script>
+        const gameSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/game/'
+        );
+
+
+
+        {#var request = new XMLHttpRequest()#}
+        {##}
+        {#// Open a new connection, using the GET request on the URL endpoint#}
+        {#request.open('GET', 'http://0.0.0.0:8000/api/game/', true)#}
+        {##}
+        {#request.onload = function() {#}
+        {#    // Begin accessing JSON data here#}
+        {#    var data = JSON.parse(this.response)#}
+        {##}
+        {#    console.log(data)#}
+        {#    console.log(request.status)#}
+        {##}
+        {##}
+        {#    if (request.status >= 200 && request.status < 400) {#}
+        {#        data.forEach(movie => {#}
+        {#          console.log(movie.title)#}
+        {#        })#}
+        {#      } else {#}
+        {#        console.log('error')#}
+        {#      }#}
+        {#}#}
+        {##}
+        {#// Send request#}
+        {#request.send();#}
+    </script>
+
+</div>

@@ -4,6 +4,38 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 
 
+# class Game(models.Model):
+#     name = models.CharField(verbose_name=_("Nazwa gry"), max_length=255)
+#
+#     completed = models.DateTimeField(null=True, blank=True)
+#     created = models.DateTimeField(auto_now_add=True)
+#     modified = models.DateTimeField(auto_now=True)
+#
+#     # players with info about
+#
+#     @staticmethod
+#     def get_by_id(id):
+#         try:
+#             return Game.objects.get(pk=id)
+#         except Game.DoesNotExist:
+#             # TODO: Handle this Exception
+#             pass
+#
+#     @staticmethod
+#     def create_new(name):
+#         """
+#         Create a new game and game squares
+#         :param user: the user that created the game
+#         :return: a new game object
+#         """
+#         # make the game's name from the name of game
+#         # TODO: Everything, user ect.
+#         new_game = Game(name=name)
+#         new_game.save()
+#
+#         return new_game
+
+
 class Zone(models.Model):
     name = models.CharField(verbose_name=_("Nazwa dzielnicy"), max_length=255)
     price_per_house = models.IntegerField(verbose_name=_("Cena za domek"))

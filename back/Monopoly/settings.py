@@ -24,7 +24,7 @@ SECRET_KEY = 'yl$hf@=der)a(w)id-7m56k^!^n_7=jn-wa7%^wl^nco*o(&$#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'api',
+    'channels',
     "rest_framework",
     "drf_yasg",
     "rest_framework.authtoken",
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'Monopoly.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,6 +78,15 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'Monopoly.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 WSGI_APPLICATION = 'Monopoly.wsgi.application'
 
 CORS_ORIGIN_WHITELIST = (
