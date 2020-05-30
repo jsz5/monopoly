@@ -31,6 +31,7 @@
                 // so that it will reload the next time this page is visited.
                 localStorage.removeItem('reloaded');
                 this.prepareWebSocket()
+                console.log(getToken())
             } else {
                 // Set a flag so that we know not to reload the page twice.
                 localStorage.setItem('reloaded', '1');
