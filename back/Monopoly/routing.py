@@ -1,16 +1,16 @@
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-# import game.routing
-import api.routing
+from Monopoly.token_auth import TokenAuthMiddleware
+from Monopoly.token_auth import TokenAuthMiddlewareStack
+from django.urls import re_path
+from api.consumers import LobbyConsumer, BoardConsumer
+from api.routing import websockets
+
 
 application = ProtocolTypeRouter({
-    # (http->django views is added by default)
-    'websocket': AuthMiddlewareStack(
-        URLRouter(
-            api.routing.websocket_urlpatterns
-            # api.routing.websocket_urlpatterns
-        )
+    "websocket": TokenAuthMiddlewareStack(
+            websockets
     ),
+
 })
 
 # from channels.routing import route, route_class

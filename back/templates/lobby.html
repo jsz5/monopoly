@@ -23,7 +23,7 @@
                     break;
                 case "start":
                     document.getElementById("start_string").style.visibility = 'visible';
-                    window.location.pathname = 'api/board/';
+                    window.location.pathname = 'api/game';
                     break;
 
             };
@@ -33,9 +33,6 @@
             lobbySocket.send(JSON.stringify({
                 'type' : 'start_clicked',
             }));
-
-
-            window.location.pathname = '/board/' + boardName + '/';
         };
 
         function sendText() {

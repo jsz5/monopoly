@@ -139,31 +139,11 @@ class GameView(TemplateView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-    def get(self, request):
-        print(request)
-        d = {}
-        for obj in Field.objects.all():
-            d[obj.pk] = {
-                "name": obj.name,
-                "type": obj.field_type.name,
-                "price": obj.price,
-                "zone": obj.zone.pk if obj.zone else None,
-                "owner": None,
-            }
-        for user in PlayingUser.objects.filter(isPlaying=True):
-            if "users" in d[user.field.pk]:
-                d[user.field.pk]["users"].append(user.pk)
-            else:
-                d[user.field.pk]["users"] = [user.pk]
+class GameTryView(TemplateView):
+    template_name = 'board.html'
 
-        for asset in Asset.objects.filter(playingUser__isPlaying=True):
-            d[asset.field.pk]["owner"] = asset.playingUser.pk
-            d[asset.field.pk]["isPledged"] = asset.isPledged
-            d[asset.field.pk]["houses"] = (
-                asset.estateNumber if asset.estateNumber else 0
-            )
-
-        return HttpResponse(d)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 class BoardView(ListAPIView):
     def get(self, request, *args, **kwargs):
