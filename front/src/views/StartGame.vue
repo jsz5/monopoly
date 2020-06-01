@@ -3,8 +3,11 @@
     <v-container>
       <v-card>
         <h1>Witaj w poczekalni :) Za chwilę będziesz mógł rozpocząć grę</h1>
+        <div id="number_of_players">
+          <h2>Liczba graczy: {{number}}</h2>
+        </div>
         <v-card-actions>
-          <v-btn class="mr-4" style="visibility: hidden" @click="startGame">Rozpocznij grę</v-btn>
+          <v-btn v-show="visible" class="mr-4" @click="startGame">Rozpocznij grę</v-btn>
         </v-card-actions>
       </v-card>
     </v-container>
@@ -12,12 +15,15 @@
 </template>
 
 <script>
+    import {getToken} from "../utils/cookies"
 
     export default {
         data: () => ({
             reloaded: false,
             lobbySocket: undefined,
-            url: 'ws://' // możliwe, że trzeba zmienić na 127.0.0.1:6379
+            number: 0,
+            visible: false,
+            url: 'ws://0.0.0.0:8000' // możliwe, że trzeba zmienić na 127.0.0.1:6379
         }),
         mounted() {
             if (localStorage.getItem('reloaded')) {
@@ -32,13 +38,16 @@
             }
         },
         methods: {
+            changeNumber(number) {
+                this.number = number;
+                return this.number;
+            },
             prepareWebSocket() {
                 this.lobbySocket = new WebSocket(
                     this.url
-                    + window.location.host
-                    + '/ws/lobby/'
+                    + '/ws/lobby/' + '?token=' + getToken()
                 );
-                this.lobbySocket.onopen = this.sendMessage
+                // this.lobbySocket.onopen = this.sendMessage
 
                 this.lobbySocket.onmessage = this.onMessage
             },
@@ -46,24 +55,27 @@
                 this.lobbySocket.send(JSON.stringify({
                     'type': 'start_clicked',
                 }));
-                // tutaj była te linijka, ale mam wątpliwości, czy na pewno o to chodziło, bo nie ma zmiennej boardName
-                // do zmiany url lepiej tutaj używać this.$router.push(route)
-                //TODO: co tutaj?
-                // window.location.pathname = '/board/' + boardName + '/';
             },
             onMessage(event) {
                 let msg = JSON.parse(event.data);
+                console.log(msg)
 
-                switch (msg.message) {
+                switch (msg.action) {
                     case "load":
-                        document.getElementById("start_button").style.visibility = 'visible';
+                        this.visible = true;
+                        // document.getElementById("start_button").style.visibility = 'visible';
+                        this.changeNumber(msg.number)
                         break;
                     case "start":
-                        document.getElementById("start_string").style.visibility = 'visible';
-                        this.$router.push('/board');
+                        this.visible = true;
                         // dodałem zamykanie połączenia przed przejściem na inną stronę
                         this.lobbySocket.close()
+                        this.$router.push('/board');
                         break;
+                  case "load_number":
+                    // this.number = msg.number
+                    this.changeNumber(msg.number)
+                    break;
 
                 }
             },

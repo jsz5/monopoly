@@ -46,6 +46,25 @@
           <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
         </v-sheet>
       </div>
+      <v-container class="inside_part">
+          <v-container class="log-info">
+            <v-textarea id="logs"></v-textarea>
+          </v-container>
+          <v-card class="buttons">
+            <v-card-actions class="dice-button">
+              <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+            </v-card-actions>
+
+            <v-container class="decide-buttons">
+              <v-card-actions>
+                <v-btn v-show="visible_decide" class="mr-4" @click="agree">Tak</v-btn>
+              </v-card-actions>
+              <v-card-actions>
+                <v-btn v-show="visible_decide" class="mr-4" @click="disagree">Nie</v-btn>
+              </v-card-actions>
+            </v-container>
+          </v-card>
+      </v-container>
       <div class="fourth_part_board">
         <v-sheet
           :width="field.width"
@@ -99,11 +118,20 @@
 </template>
 
 <script>
-export default {
+  import axios from 'axios';
+  import {getToken} from "../utils/cookies";
+  import baseUrl from "../config";
+
+  export default {
   name: "Board",
   data: () => {
     return {
       boardConfig: {},
+      boardSocket: undefined,
+      visible_play: false,
+      visible_decide: false,
+      url_board: baseUrl + '/api/board/',
+      url: "ws://0.0.0.0:8000",
       firstQuarterConfig: [],
       secondQuarterConfig: [],
       thirdQuarterConfig: [],
@@ -453,8 +481,42 @@ export default {
         this.fourthQuarterConfig.push(item[1]);
       }
     });
+  },
+  mounted() {
+    console.log(this.url_board);
+    const config = {
+      headers: {
+        // "X-CSRFToken": "jfI7rN1qHJo4qjVQStmgCopc5Erze7QmCJuwQEjFoQrO4b16Are27cu9AOGe3iYE",
+        'Authorization': 'Bearer ' + getToken(),
+        "Accept": "application/json"
+      }
+    };
+    console.log(config)
+    axios.get(this.url_board, config)
+        .then(response => {
+            console.log(response.data);
+        })
+        .catch(error => {
+            console.log(error);
+        });
+  },
+    methods: {
+    startTurn() {
+      console.log("agree");
+        // this.lobbySocket.send(JSON.stringify({
+        //     'type': 'start_clicked',
+        // }));
+    },
+    agree() {
+      console.log("agree");
+    },
+    disagree() {
+        console.log("disagree");
+    },
   }
-};
+
+
+  };
 </script>
 
 <style scoped>
