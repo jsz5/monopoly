@@ -23,7 +23,7 @@
             lobbySocket: undefined,
             number: 0,
             visible: false,
-            url: 'ws://0.0.0.0:8000' // możliwe, że trzeba zmienić na 127.0.0.1:6379
+            url: 'ws://localhost:8000' // możliwe, że trzeba zmienić na 127.0.0.1:6379
         }),
         mounted() {
             if (localStorage.getItem('reloaded')) {
