@@ -100,6 +100,7 @@ class DiceRollView(ListAPIView):
         Messages(type="move", parameter=message).save()
         return Response({"number": dice})
 
+
 class LobbyView(TemplateView):
     template_name = 'lobby.html'
 
@@ -107,43 +108,6 @@ class LobbyView(TemplateView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-# class GameView(TemplateView):
-#     template_name = 'game.html'
-#
-#     @method_decorator(login_required)
-#     def dispatch(self, *args, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         # kwargs['game_id']
-#         self.game = Game.get_by_id(1)  # kwargs['board_name']
-#
-#         print(kwargs['board_name'])
-#         print(self.game)
-#         # context['board_name'] = Article.objects.all()[:5]
-#         # get the game by the id
-#         # self.game = Game.get_by_id(kwargs['game_id'])
-#         # user = get_user(request)
-#
-#         return super().dispatch(*args, **kwargs)
-#
-#     def __add_playing_user(self, user):
-#         PlayingUser(user=user).save()
-
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
-
-
-class GameView(TemplateView):
-    template_name = 'game.html'
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
-class GameTryView(TemplateView):
-    template_name = 'board.html'
-
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
 class BoardView(ListAPIView):
     def get(self, request, *args, **kwargs):
