@@ -26,4 +26,10 @@ urlpatterns = [
     path("field/<int:pk>/", views.FieldView.as_view(), name="board"),
     path("lobby", views.LobbyView.as_view(), name='lobby'),
     path("game", views.GameView.as_view(), name='game'),
+    path("field/buy", views.BuyFieldView.as_view(), name='buy-field'),
+    path("field/sell/<int:pk>/", views.SellFieldView.as_view(), name='sell-field'),
+    path("field/pledge/", views.PledgeFieldView.as_view(), name='pledge-field'),
+    path("field/pledge-reverse/", views.UnPledgeFieldView.as_view(), name='pledge-field-revere'),
+    path("field/buy-estate/", views.BuyEstateFieldView.as_view(), name='buy-estate'),
+    path("field/sell-estate/", views.SellEstateFieldView.as_view(), name='sell-estate'),
 ]
