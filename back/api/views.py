@@ -107,9 +107,9 @@ class DiceRollView(ListAPIView):
         print(user)
         user.place = (user.place + dice) % Field.objects.all().count()
         user.save()
-        message = {"user": user.id, "field": user.place}
-        Messages(type="move", parameter=message).save()
-        return Response({"number": dice})
+        # message = {"user": user.id, "field": user.place}
+        # Messages(type="move", parameter=message).save()
+        return Response({"number": dice, 'place_id': user.place})
 
 
 class LobbyView(TemplateView):
@@ -145,7 +145,6 @@ class BoardView(ListAPIView):
             )
 
         return Response(d)
-
 
 class FieldView(ListAPIView):
     def get(self, request, *args, **kwargs):
