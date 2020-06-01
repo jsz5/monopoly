@@ -1,9 +1,16 @@
 import json
 
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView, CreateAPIView, ListAPIView
+from rest_framework.generics import (
+    GenericAPIView,
+    CreateAPIView,
+    ListAPIView,
+    DestroyAPIView,
+    UpdateAPIView,
+)
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
 from api.models import PlayingUser, FieldType, Field, Messages, Asset, Estate
@@ -13,7 +20,7 @@ import random
 
 from django.http import HttpResponse
 
-from api.serializers import PlayingUserSerializer, EstateSerializer
+from api.serializers import PlayingUserSerializer, EstateSerializer, FieldSerializer, FieldEstateSerializer
 
 from django.views.generic import CreateView, TemplateView
 from django.utils.decorators import method_decorator
@@ -62,7 +69,11 @@ class Login(CreateAPIView):
                 start_game_button = self.__add_playing_user(user)
                 number_of_users = PlayingUser.objects.count()
                 return Response(
-                    {"key": token.key, "start_game_button": start_game_button, "number_of_users": number_of_users}
+                    {
+                        "key": token.key,
+                        "start_game_button": start_game_button,
+                        "number_of_users": number_of_users,
+                    }
                 )
         return Response("Invalid username or password", status=401)
 
@@ -100,12 +111,14 @@ class DiceRollView(ListAPIView):
         Messages(type="move", parameter=message).save()
         return Response({"number": dice})
 
+
 class LobbyView(TemplateView):
-    template_name = 'lobby.html'
+    template_name = "lobby.html"
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
 
 # class GameView(TemplateView):
 #     template_name = 'game.html'
@@ -133,7 +146,7 @@ from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 
 
 class GameView(TemplateView):
-    template_name = 'game.html'
+    template_name = "game.html"
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
@@ -164,6 +177,7 @@ class GameView(TemplateView):
             )
 
         return HttpResponse(d)
+
 
 class BoardView(ListAPIView):
     def get(self, request, *args, **kwargs):
@@ -207,12 +221,10 @@ class FieldView(ListAPIView):
         d["price"] = estate.field.price
         d["zone"] = estate.field.zone.pk if estate.field.zone else None
         d["owner"] = None
+        d["users"] = []
 
         for user in PlayingUser.objects.filter(isPlaying=True, field=estate.field):
-            if "users" in d[user.field.pk]:
-                d[user.field.pk]["users"].append(user.pk)
-            else:
-                d[user.field.pk]["users"] = [user.pk]
+            d["users"].append(user.pk)
 
         for asset in Asset.objects.filter(playingUser__isPlaying=True):
             d["owner"] = asset.playingUser.pk
@@ -220,3 +232,252 @@ class FieldView(ListAPIView):
             d["houses"] = asset.estateNumber if asset.estateNumber else 0
 
         return Response(d)
+
+
+class BuyFieldView(CreateAPIView):
+    """
+    Active and playing user buying current standing field
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            field = user.field
+            if Asset.objects.filter(field=field):
+                return Response("Obecne pole jest zajęte", status=403)
+            if field.field_type.pk not in [7,8,9]:
+                return Response(
+                    "Nieprawidłowy typ pola " + field.field_type.name, status=403
+                )
+            if user.budget < field.price:
+                return Response("Niewystarczający budżet", status=403)
+            user.budget -= field.price
+            user.save()
+            Asset.objects.create(field=field, playingUser=user)
+            return Response("Kupiono pomyślnie")
+
+        else:
+            return Response("Użytkownik nie ma prawa zakupu", status=401)
+
+
+class SellFieldView(DestroyAPIView):
+    """
+    Active and playing user sell field (id in params)
+    """
+
+    permission_classes = [IsAuthenticated]
+
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            try:
+                field = Field.objects.get(pk=self.kwargs["pk"])
+            except Field.DoesNotExist:
+                return Response("Nieprawidłowe pole", status=403)
+
+            try:
+                asset = Asset.objects.get(field=field, playingUser=user)
+            except Asset.DoesNotExist:
+                return Response("Nieprawidłowy właściciel pola", status=403)
+
+            if field.field_type.pk != 7:
+                houses = 0
+            else:
+                houses = asset.estateNumber * field.zone.price_per_house
+            if asset.isPledged:
+                user.budget += (
+                        field.price / 2 + houses
+                )
+                user.save()
+                asset.delete()
+            else:
+                user.budget += (
+                        field.price + houses
+                )
+                user.save()
+                asset.delete()
+
+            return Response("Sprzedano pomyślnie")
+
+        else:
+            return Response("Użytkownik nie ma prawa sprzedaży", status=401)
+
+
+class PledgeFieldView(UpdateAPIView):
+    """
+    Active and playing user pledge field
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FieldSerializer
+
+    def put(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            validated_data = self.serializer_class(request.data).data
+            try:
+                field = Field.objects.get(pk=validated_data["field"])
+            except Field.DoesNotExist:
+                return Response("Błędne pole", status=403)
+
+            if field.field_type.pk not in [7,8,9]:
+                return Response(
+                    "Nieprawidłowy typ pola " + field.field_type.name, status=403
+                )
+            try:
+                asset = Asset.objects.get(field=field, playingUser=user)
+                if asset.isPledged:
+                    return Response("Obecne pole jest już zastawione", status=403)
+                user.budget += field.price / 2
+                user.save()
+                asset.isPledged = True
+                asset.save()
+                return Response("Zastawiono pomyślnie")
+            except Asset.DoesNotExist:
+                return Response("Pole nie należy do użytkownika", status=403)
+
+        else:
+            return Response("Użytkownik nie ma prawa zastawiania", status=401)
+
+
+class UnPledgeFieldView(UpdateAPIView):
+    """
+    Active and playing user reverse pledge field
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FieldSerializer
+
+    def put(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            validated_data = self.serializer_class(request.data).data
+            try:
+                field = Field.objects.get(pk=validated_data["field"])
+            except Field.DoesNotExist:
+                return Response("Błędne pole", status=403)
+
+            if field.field_type.pk not in [7,8,9]:
+                return Response(
+                    "Nieprawidłowy typ pola " + field.field_type.name, status=403
+                )
+            try:
+                asset = Asset.objects.get(field=field, playingUser=user)
+                if asset.isPledged is False:
+                    return Response("Obecne pole nie jest zastawione", status=403)
+                if user.budget < field.price:
+                    return Response("Niewystarczający budżet", status=403)
+                user.budget -= field.price / 2
+                user.save()
+                asset.isPledged = False
+                asset.save()
+                return Response("Zastawienie usunięte pomyślnie")
+            except Asset.DoesNotExist:
+                return Response("Pole nie należy do użytkownika", status=403)
+
+        else:
+            return Response("Użytkownik nie ma prawa usuwania zastawienia", status=401)
+
+
+class BuyEstateFieldView(CreateAPIView):
+    """
+    Active and playing user buying houses for field
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FieldEstateSerializer
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            validated_data = self.serializer_class(request.data).data
+            try:
+                field = Field.objects.get(pk=validated_data["field"])
+            except Field.DoesNotExist:
+                return Response("Błędne pole", status=403)
+
+            if field.field_type.pk != 7:
+                return Response(
+                    "Nieprawidłowy typ pola " + field.field_type.name, status=403
+                )
+            try:
+                asset = Asset.objects.get(field=field, playingUser=user)
+                if asset.isPledged is True:
+                    return Response("Obecne pole jest zastawione", status=403)
+                number_of_houses = validated_data["number_of_houses"]
+                if number_of_houses not in range(1, 6) or asset.estateNumber + number_of_houses > 5:
+                    return Response("Błędna ilość domków", status=403)
+                if user.budget < field.zone.price_per_house * number_of_houses:
+                    return Response("Niewystarczający budżet", status=403)
+                user.budget -= field.zone.price_per_house * number_of_houses
+                user.save()
+                asset.estateNumber += number_of_houses
+                asset.save()
+                return Response("Zakupiono pomyślnie")
+            except Asset.DoesNotExist:
+                return Response("Pole nie należy do użytkownika", status=403)
+
+        else:
+            return Response("Użytkownik nie ma prawa usuwania zastawienia", status=401)
+
+
+class SellEstateFieldView(CreateAPIView):
+    """
+    Active and playing user sell houses for field
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FieldEstateSerializer
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            validated_data = self.serializer_class(request.data).data
+            try:
+                field = Field.objects.get(pk=validated_data["field"])
+            except Field.DoesNotExist:
+                return Response("Błędne pole", status=403)
+
+            if field.field_type.pk != 7:
+                return Response(
+                    "Nieprawidłowy typ pola " + field.field_type.name, status=403
+                )
+            try:
+                asset = Asset.objects.get(field=field, playingUser=user)
+                if asset.isPledged is True:
+                    return Response("Obecne pole jest zastawione", status=403)
+                number_of_houses = validated_data["number_of_houses"]
+                if number_of_houses not in range(1, 6) or asset.estateNumber - number_of_houses < 0:
+                    return Response("Błędna ilość domków", status=403)
+
+                user.budget += field.zone.price_per_house * number_of_houses
+                user.save()
+                asset.estateNumber -= number_of_houses
+                asset.save()
+                return Response("Sprzedano pomyślnie")
+            except Asset.DoesNotExist:
+                return Response("Pole nie należy do użytkownika", status=403)
+
+        else:
+            return Response("Użytkownik nie ma prawa usuwania zastawienia", status=401)
