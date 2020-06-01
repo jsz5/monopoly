@@ -23,7 +23,7 @@
             lobbySocket: undefined,
             number: 0,
             visible: false,
-            url: 'ws://0.0.0.0:8000' // możliwe, że trzeba zmienić na 127.0.0.1:6379
+            url: 'ws://localhost:8000' // możliwe, że trzeba zmienić na 127.0.0.1:6379
         }),
         mounted() {
             if (localStorage.getItem('reloaded')) {
@@ -31,6 +31,7 @@
                 // so that it will reload the next time this page is visited.
                 localStorage.removeItem('reloaded');
                 this.prepareWebSocket()
+                console.log(getToken())
             } else {
                 // Set a flag so that we know not to reload the page twice.
                 localStorage.setItem('reloaded', '1');

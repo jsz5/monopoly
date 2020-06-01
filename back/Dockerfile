@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /code
 
+ENV PYTHONPATH /code:$PYTHONPATH
+ENV DJANGO_SETTINGS_MODULE Monopoly.settings
+
 COPY . /code/
 
 # CMD tail -f /dev/null

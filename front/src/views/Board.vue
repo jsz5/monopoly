@@ -48,7 +48,7 @@
       </div>
       <v-container class="inside_part">
           <v-container class="log-info">
-            <v-textarea id="logs"></v-textarea>
+            <v-textarea id="logs" v-model="message"></v-textarea>
           </v-container>
           <v-card class="buttons">
             <v-card-actions class="dice-button">
@@ -118,7 +118,7 @@
 </template>
 
 <script>
-  import axios from 'axios';
+  import axiosSession from "../utils/axiosSession"
   import {getToken} from "../utils/cookies";
   import baseUrl from "../config";
 
@@ -130,7 +130,8 @@
       boardSocket: undefined,
       visible_play: false,
       visible_decide: false,
-      url_board: baseUrl + '/api/board/',
+      message: '',
+      // url_board: baseUrl + '/api/board/',
       url: "ws://0.0.0.0:8000",
       firstQuarterConfig: [],
       secondQuarterConfig: [],
@@ -483,29 +484,78 @@
     });
   },
   mounted() {
-    console.log(this.url_board);
-    const config = {
-      headers: {
-        // "X-CSRFToken": "jfI7rN1qHJo4qjVQStmgCopc5Erze7QmCJuwQEjFoQrO4b16Are27cu9AOGe3iYE",
-        'Authorization': 'Bearer ' + getToken(),
-        "Accept": "application/json"
+    if (localStorage.getItem('reloaded')) {
+          // The page was just reloaded. Clear the value from local storage
+          // so that it will reload the next time this page is visited.
+          localStorage.removeItem('reloaded');
+          // this.prepareWebSocket()
+      } else {
+          // Set a flag so that we know not to reload the page twice.
+          localStorage.setItem('reloaded', '1');
+          location.reload();
       }
-    };
-    console.log(config)
-    axios.get(this.url_board, config)
+    this.prepareWebSocket()
+    // console.log(this.url_board);
+  //   const config = {
+  //     headers: {
+  //       // "X-CSRFToken": "jfI7rN1qHJo4qjVQStmgCopc5Erze7QmCJuwQEjFoQrO4b16Are27cu9AOGe3iYE",
+  //       'Authorization': 'Bearer ' + getToken(),
+  //       "Accept": "application/json"
+  //     }
+  //   };
+  //   console.log(config)
+  //   axios.get(this.url_board, config)
+  //       .then(response => {
+  //           console.log(response.data);
+  //       })
+  //       .catch(error => {
+  //           console.log(error);
+  //       });
+  },
+    methods: {
+      prepareWebSocket() {
+        this.boardSocket = new WebSocket(
+            this.url
+            + '/ws/game/' + '?token=' + getToken()
+        );
+        // this.lobbySocket.onopen = this.sendMessage
+
+        this.boardSocket.onmessage = this.onMessage
+      },
+      onMessage(event) {
+        let msg = JSON.parse(event.data);
+        console.log(msg)
+
+        switch (msg.action) {
+          case "turn":
+            this.visible_play = true;
+            // document.getElementById("start_button").style.visibility = 'visible';
+            break;
+          case "start":
+            this.visible = true;
+            // dodałem zamykanie połączenia przed przejściem na inną stronę
+            this.lobbySocket.close()
+            this.$router.push('/board');
+            break;
+          case "dice":
+            this.message = "(websocket) You get " + msg.number;
+            break;
+        }
+      },
+    startTurn() {
+      console.log("start turn");
+      // this.boardSocket.send(JSON.stringify({
+      //     'action': 'game_start',
+      // }));
+      axiosSession.get(baseUrl + '/api/dice-roll/')
         .then(response => {
-            console.log(response.data);
+          this.message = "Wyrzucono: " + response.data.number + ", czyli stajesz na polu numer " + response.data.place_id;
+          // let place_id = response.data.place_id;
+
         })
         .catch(error => {
             console.log(error);
         });
-  },
-    methods: {
-    startTurn() {
-      console.log("agree");
-        // this.lobbySocket.send(JSON.stringify({
-        //     'type': 'start_clicked',
-        // }));
     },
     agree() {
       console.log("agree");
@@ -571,4 +621,22 @@
   flex-direction: column;
   justify-content: space-between;
 }
+.inside_part {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: center;
+}
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.decide-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>
