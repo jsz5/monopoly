@@ -172,7 +172,7 @@ class DiceRollView(ListAPIView):
 
             if user.budget < 0:
                 user.isActive = False
-                return Response("Przegrana")
+                return Response("Przegrana gra")
 
             user.field = field
             user.save()
