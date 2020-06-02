@@ -176,6 +176,7 @@ class DiceRollView(ListAPIView):
 
             # todo prison
             # todo endpoint zakoncz ture
+            # todo saldo użytkownika dogadac
 
             user.field = field
             user.save()
