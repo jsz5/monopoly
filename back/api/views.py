@@ -174,6 +174,9 @@ class DiceRollView(ListAPIView):
                 user.isActive = False
                 return Response("Przegrana gra")
 
+            # todo prison
+            # todo endpoint zakoncz ture
+
             user.field = field
             user.save()
             # message = {"user": user.id, "field": user.place}
