@@ -7,6 +7,7 @@ from rest_framework.generics import (
     ListAPIView,
     DestroyAPIView,
     UpdateAPIView,
+    ListCreateAPIView,
 )
 from rest_framework import status
 from rest_framework.views import APIView
@@ -19,12 +20,23 @@ from rest_auth.views import LogoutView
 import random
 
 from django.http import HttpResponse
+from django.db.models import Q
+from django.http import Http404
 
-from api.serializers import PlayingUserSerializer, EstateSerializer, FieldSerializer, FieldEstateSerializer
+from api.serializers import (
+    PlayingUserSerializer,
+    EstateSerializer,
+    FieldSerializer,
+    FieldEstateSerializer,
+)
 
 from django.views.generic import CreateView, TemplateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+
+from api.models import Transaction
+from api.serializers import TransactionListSerializer, CreateTransactionSerializer
+from django.contrib.auth.models import User
 
 
 class PlayingUserReadyUpdateView(APIView):
@@ -100,16 +112,28 @@ class PlayingUserListView(ListAPIView):
     queryset = PlayingUser.objects.all()
 
 
+class AuthUserView(APIView):
+    def get(self, request, *args, **kwargs):
+        auth_playing = PlayingUser.objects.get(user=request.user)
+        return Response(
+            {
+                "username": request.user.username,
+                "budget": auth_playing.budget,
+                "field": auth_playing.field_id,
+            }
+        )
+
+
 class DiceRollView(ListAPIView):
     def get(self, request, *args, **kwargs):
         dice = random.randint(1, 6)
         user = PlayingUser.objects.filter(isPlaying=True).first()
         print(user)
-        user.place = (user.place + dice) % Field.objects.all().count()
+        user.field_id = (user.field_id + dice) % Field.objects.all().count()
         user.save()
         # message = {"user": user.id, "field": user.place}
         # Messages(type="move", parameter=message).save()
-        return Response({"number": dice, 'place_id': user.place})
+        return Response({"number": dice, "field_id": user.field_id})
 
 
 class LobbyView(TemplateView):
@@ -126,25 +150,28 @@ class BoardView(ListAPIView):
         for obj in Field.objects.all():
             d[obj.pk] = {
                 "name": obj.name,
+                "id": obj.id,
                 "type": obj.field_type.name,
                 "price": obj.price,
                 "zone": obj.zone.pk if obj.zone else None,
                 "owner": None,
             }
-        for user in PlayingUser.objects.filter(isPlaying=True):
+        for user in PlayingUser.objects.filter(isActive=True):
             if "users" in d[user.field.pk]:
                 d[user.field.pk]["users"].append(user.pk)
             else:
                 d[user.field.pk]["users"] = [user.pk]
 
-        for asset in Asset.objects.filter(playingUser__isPlaying=True):
-            d[asset.field.pk]["owner"] = asset.playingUser.pk
+        for asset in Asset.objects.filter(playingUser__isActive=True):
+            owner = User.objects.get(playing_users=asset.playingUser.pk)
+            d[asset.field.pk]["owner"] = owner.username
             d[asset.field.pk]["isPledged"] = asset.isPledged
             d[asset.field.pk]["houses"] = (
                 asset.estateNumber if asset.estateNumber else 0
             )
 
         return Response(d)
+
 
 class FieldView(ListAPIView):
     def get(self, request, *args, **kwargs):
@@ -180,6 +207,8 @@ class BuyFieldView(CreateAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    queryset = None
+    serializer_class = None
 
     def post(self, request, *args, **kwargs):
         try:
@@ -190,7 +219,7 @@ class BuyFieldView(CreateAPIView):
             field = user.field
             if Asset.objects.filter(field=field):
                 return Response("Obecne pole jest zajęte", status=403)
-            if field.field_type.pk not in [7,8,9]:
+            if field.field_type.pk not in [7, 8, 9]:
                 return Response(
                     "Nieprawidłowy typ pola " + field.field_type.name, status=403
                 )
@@ -211,7 +240,6 @@ class SellFieldView(DestroyAPIView):
     """
 
     permission_classes = [IsAuthenticated]
-
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -234,15 +262,11 @@ class SellFieldView(DestroyAPIView):
             else:
                 houses = asset.estateNumber * field.zone.price_per_house
             if asset.isPledged:
-                user.budget += (
-                        field.price / 2 + houses
-                )
+                user.budget += field.price / 2 + houses
                 user.save()
                 asset.delete()
             else:
-                user.budget += (
-                        field.price + houses
-                )
+                user.budget += field.price + houses
                 user.save()
                 asset.delete()
 
@@ -272,7 +296,7 @@ class PledgeFieldView(UpdateAPIView):
             except Field.DoesNotExist:
                 return Response("Błędne pole", status=403)
 
-            if field.field_type.pk not in [7,8,9]:
+            if field.field_type.pk not in [7, 8, 9]:
                 return Response(
                     "Nieprawidłowy typ pola " + field.field_type.name, status=403
                 )
@@ -312,7 +336,7 @@ class UnPledgeFieldView(UpdateAPIView):
             except Field.DoesNotExist:
                 return Response("Błędne pole", status=403)
 
-            if field.field_type.pk not in [7,8,9]:
+            if field.field_type.pk not in [7, 8, 9]:
                 return Response(
                     "Nieprawidłowy typ pola " + field.field_type.name, status=403
                 )
@@ -363,7 +387,10 @@ class BuyEstateFieldView(CreateAPIView):
                 if asset.isPledged is True:
                     return Response("Obecne pole jest zastawione", status=403)
                 number_of_houses = validated_data["number_of_houses"]
-                if number_of_houses not in range(1, 6) or asset.estateNumber + number_of_houses > 5:
+                if (
+                    number_of_houses not in range(1, 6)
+                    or asset.estateNumber + number_of_houses > 5
+                ):
                     return Response("Błędna ilość domków", status=403)
                 if user.budget < field.zone.price_per_house * number_of_houses:
                     return Response("Niewystarczający budżet", status=403)
@@ -408,7 +435,10 @@ class SellEstateFieldView(CreateAPIView):
                 if asset.isPledged is True:
                     return Response("Obecne pole jest zastawione", status=403)
                 number_of_houses = validated_data["number_of_houses"]
-                if number_of_houses not in range(1, 6) or asset.estateNumber - number_of_houses < 0:
+                if (
+                    number_of_houses not in range(1, 6)
+                    or asset.estateNumber - number_of_houses < 0
+                ):
                     return Response("Błędna ilość domków", status=403)
 
                 user.budget += field.zone.price_per_house * number_of_houses
@@ -421,3 +451,78 @@ class SellEstateFieldView(CreateAPIView):
 
         else:
             return Response("Użytkownik nie ma prawa usuwania zastawienia", status=401)
+
+
+class TransactionsView(ListCreateAPIView):
+    serializer_class = CreateTransactionSerializer
+    queryset = Transaction.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        auth_queryset = Transaction.objects.filter(
+            Q(seller=self.request.user, isBuyingOffer=False)
+            | Q(buyer=self.request.user, isBuyingOffer=True)
+        )
+        send_by_auth = TransactionListSerializer(auth_queryset, many=True).data
+        others_queryset = Transaction.objects.filter(
+            Q(seller=self.request.user, isBuyingOffer=True)
+            | Q(buyer=self.request.user, isBuyingOffer=False)
+        )
+        send_by_others = TransactionListSerializer(others_queryset, many=True).data
+        return Response(
+            {"send_by_auth": send_by_auth, "send_by_others": send_by_others}
+        )
+
+    def post(self, request, *args, **kwargs):
+        if request.data["isBuyingOffer"] == "true":
+            request.data["buyer"] = request.user.id
+        else:
+            request.data["seller"] = request.user.id
+        print(request.data)
+        return super().post(request, *args, **kwargs)
+
+
+class TransactionUpdateView(APIView):
+    def get_object(self, pk):
+        try:
+            return Transaction.objects.get(pk=pk)
+        except Transaction.DoesNotExist:
+            raise Http404
+
+    def put(self, request, pk, format=None):
+        try:
+            transaction = self.get_object(pk)
+            buyer = PlayingUser.objects.filter(user=transaction.buyer).first()
+            seller = PlayingUser.objects.filter(user=transaction.seller).first()
+            if (
+                Asset.objects.filter(
+                    playingUser=seller, field=transaction.field
+                ).count()
+                == 0
+                or transaction.price > buyer.budget
+            ):
+                print(
+                    Asset.objects.filter(
+                        playingUser=seller, field=transaction.field
+                    ).count()
+                )
+                return Response("Nie można dokonać transakcji.", status=500)
+
+            buyer.budget -= transaction.price
+            buyer.save()
+            seller.budget += transaction.price
+            seller.save()
+            seller_asset = Asset.objects.filter(
+                playingUser=seller, field=transaction.field
+            ).first()
+            seller_asset.playingUser = buyer
+            seller_asset.save()
+            transaction.finished = True
+            transaction.save()
+            return Response("Transakcja została zakończona", status=200)
+        except Exception as e:
+            return Response("Nie można dokonać transakcji.", status=500)
+
+    def delete(self, request, pk, format=None):
+        snippet = self.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

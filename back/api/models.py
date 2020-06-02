@@ -144,6 +144,7 @@ class Transaction(models.Model):
     )
     price = models.IntegerField(verbose_name=_("Cena za pole"), null=True, blank=True)
     isBuyingOffer = models.BooleanField(verbose_name=_("Oferta kupna"))
+    finished = models.BooleanField(verbose_name=_("Oferta zakończona"),default=False)
 
     class Meta:
         verbose_name = _("Oferty")
