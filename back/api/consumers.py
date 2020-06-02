@@ -10,7 +10,7 @@ import random
 class LobbyConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
-        self.user = self.scope['user'] #User.objects.filter(username=self.scope["user"]).first()
+        self.user = self.scope['user']  # User.objects.filter(username=self.scope["user"]).first()
         self.lobby_group_name = 'game'
 
         # Join room group
@@ -95,7 +95,7 @@ class LobbyConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps({
                 'action': event['action']
             }))
-        else: # event['action'] == 'load' or:
+        else:  # event['action'] == 'load' or:
             self.send(text_data=json.dumps({
                 'action': event['action'],
                 'number': event['number']
@@ -165,7 +165,7 @@ class BoardConsumer(WebsocketConsumer):
             if field.field_type_id == 7:
                 self.send(text_data=json.dumps({
                     'action': 'card_buy',
-                    'roll' : dice,
+                    'roll': dice,
                     'buy': field.name,
                     'price': field.price,
                     'zone': zone.name,
@@ -181,13 +181,12 @@ class BoardConsumer(WebsocketConsumer):
             field = Field.objects.filter(id=user.place).first()
             self.send(text_data=json.dumps({
                 'action': 'message',
-                'message' : 'Congratulation! You bought a card ' + field.name
+                'message': 'Congratulation! You bought a card ' + field.name
             }))
             # Finished turn -> send message to update
             self.__send_update()
-        elif action =='end_turn':
+        elif action == 'end_turn':
             self.__send_update()
-
 
     # Receive message from room group
     def board_message(self, event):
@@ -207,6 +206,7 @@ class BoardConsumer(WebsocketConsumer):
                 'message': 'update'
             }
         )
+
 
 # class BoardConsumer(AsyncWebsocketConsumer):
 #     async def connect(self):
@@ -248,3 +248,57 @@ class BoardConsumer(WebsocketConsumer):
 #         await self.send(text_data=json.dumps({
 #             'message': message
 #         }))
+
+
+class TransactionConsumer(WebsocketConsumer):
+    def connect(self):
+        self.transaction_group_name = 'transaction'
+        self.user = User.objects.filter(username=self.scope["user"]).first()
+
+        # Join room group
+        async_to_sync(self.channel_layer.group_add)(
+            self.transaction_group_name,
+            self.channel_name
+        )
+        self.accept()
+
+    def next_turn(self):
+        user = PlayingUser.objects.filter(isPlaying=True).first()
+        if user == PlayingUser.objects.filter(user=self.user).first():
+            self.send(text_data=json.dumps({
+                'action': 'turn'
+            }))
+
+    def disconnect(self, close_code):
+        # Leave board group
+        async_to_sync(self.channel_layer.group_discard)(
+            self.board_group_name,
+            self.channel_name
+        )
+
+        # Receive message from WebSocket
+
+    def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
+      
+
+        # Send message to room group
+        async_to_sync(self.channel_layer.group_send)(
+            self.transaction_group_name,
+            {
+                'type': 'refresh_message',
+                'message': message
+            }
+        )
+
+        # Receive message from room group
+
+    def refresh_message(self, event):
+        message = event['message']
+
+
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'message': message
+        }))

@@ -31,4 +31,7 @@ urlpatterns = [
     path("field/pledge-reverse/", views.UnPledgeFieldView.as_view(), name='pledge-field-revere'),
     path("field/buy-estate/", views.BuyEstateFieldView.as_view(), name='buy-estate'),
     path("field/sell-estate/", views.SellEstateFieldView.as_view(), name='sell-estate'),
+    path("transaction/", views.TransactionsView.as_view(), name='transactions'),
+    path("transaction/<int:pk>/", views.TransactionUpdateView.as_view(), name='transaction-update'),
+    path("auth-user/", views.AuthUserView.as_view(), name='auth-user')
 ]
