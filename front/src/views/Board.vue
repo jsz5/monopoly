@@ -22,9 +22,12 @@
                 </span><br>
                 <span v-if="field.type=='START'"><b>START</b></span>
                 <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
+                </v-icon >
+<!--                <div v-if="field.users.length  > 0">-->
+                    <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
                 </v-icon>
-                <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                </v-icon>
+<!--                </div>-->
+
                 <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
                 <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
                 <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
@@ -59,28 +62,44 @@
                     <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
                 </v-sheet>
             </div>
-            <!--        <v-container fluid style="margin: 0px; padding: 0px; width: 20%" class="json_board_part">-->
-
-            <!--            <pre>{{ jsonBoard  }}</pre>-->
-            <!--        </v-container>-->
             <v-container class="inside_part">
-                <v-container class="log-info">
-                    <v-textarea id="logs" v-model="message"></v-textarea>
+                <v-container class="dice">
+                    <h2>{{dice}}</h2>
                 </v-container>
-                <v-card class="buttons">
+                <v-container class="turn">
+                    <h2>{{turn}}</h2>
+                </v-container>
+                <v-container v-show="visible_houses" class="house-buy">
+                    <h2> Kupno domków</h2>
+                    <v-container class="buy_houses_buttons">
+                        <v-col sm="4" md="2">
+                          <v-text-field
+                            label="ID pola"
+                            outlined
+                            v-model="house_id"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col sm="4" md="2">
+                          <v-text-field
+                            label="ilość domków"
+                            outlined
+                            v-model="house_quantity"
+                          ></v-text-field>
+                        </v-col>
+                        <v-card-actions>
+                            <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
+                        </v-card-actions>
+                    </v-container>
+                </v-container>
+                <v-container class="turn_buttons">
                     <v-card-actions class="dice-button">
                         <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
                     </v-card-actions>
 
-                    <v-container class="decide-buttons">
-                        <v-card-actions>
-                            <v-btn v-show="visible_decide" class="mr-4" @click="agree">Tak</v-btn>
-                        </v-card-actions>
-                        <v-card-actions>
-                            <v-btn v-show="visible_decide" class="mr-4" @click="disagree">Nie</v-btn>
-                        </v-card-actions>
-                    </v-container>
-                </v-card>
+                    <v-card-actions>
+                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
+                    </v-card-actions>
+                </v-container>
             </v-container>
             <div class="fourth_part_board">
                 <v-sheet
@@ -313,7 +332,7 @@
 </template>
 
 <script>
-    import axiosSession from "../utils/axiosSession"
+    import axiosSessionBoard from "../utils/axiosSessionBoard"
     import {getToken} from "../utils/cookies";
     import baseUrl from "../config";
 
@@ -324,7 +343,13 @@
                 boardConfig: {},
                 transactionSocket: undefined,
                 visible_play: false,
-                visible_decide: false,
+                visible_end: false,
+                visible_houses: false,
+                house_quantity: null,
+                house_id: null,
+                myTurn: false,
+                turn: '',
+                dice: null,
                 message: '',
                 // url_board: baseUrl + '/api/board/',
                 url: "ws://0.0.0.0:8000",
@@ -390,24 +415,14 @@
         },
 
         beforeMount() {
-            // axios
-            //   .get("/user?ID=12345")
-            //   .then(response => {
-            //     // handle success
-            //     console.log(response);
-            //   })
-            //   .catch(error => {
-            //     // handle error
-            //     console.log(error);
-            //   });
-
-            this.fetchBoard()
+            this.fetchBoard(true)
             console.log("board")
             console.log(this.boardConfig)
 
             this.fetchTransactions()
             this.fetchUsername()
             this.fetchPlayingUsers()
+            this.fetchCurrentUser()
 
         },
         mounted() {
@@ -415,29 +430,12 @@
                 // The page was just reloaded. Clear the value from local storage
                 // so that it will reload the next time this page is visited.
                 localStorage.removeItem('reloaded');
-                // this.prepareWebSocket()
+                this.prepareWebSocket()
             } else {
                 // Set a flag so that we know not to reload the page twice.
                 localStorage.setItem('reloaded', '1');
                 location.reload();
             }
-            this.prepareWebSocket()
-            // console.log(this.url_board);
-            //   const config = {
-            //     headers: {
-            //       // "X-CSRFToken": "jfI7rN1qHJo4qjVQStmgCopc5Erze7QmCJuwQEjFoQrO4b16Are27cu9AOGe3iYE",
-            //       'Authorization': 'Bearer ' + getToken(),
-            //       "Accept": "application/json"
-            //     }
-            //   };
-            //   console.log(config)
-            //   axios.get(this.url_board, config)
-            //       .then(response => {
-            //           console.log(response.data);
-            //       })
-            //       .catch(error => {
-            //           console.log(error);
-            //       });
         },
         methods: {
             prepareWebSocket() {
@@ -460,20 +458,47 @@
                 console.log(msg)
 
                 switch (msg.action) {
-                    case "turn":
-                        this.visible_play = true;
+                    case "update":
+                        console.log(msg.board);
+                        this.boardConfig = msg.board;
+                        // this.boardConfig = Object.assign({}, this.boardConfig, msg.board)
+                        // this.attachBoard(msg.board);
+                        // this.boardConfig = JSON.parse(JSON.stringify(msg.board));
+                        // console.log(msg.board);
+                        // this.n();
+                        // this.fetchBoard(false);
+                        // this.boardConfig["3"].users = [3,5];
+                        this.fetchUsername();
+                        // this.configureBoard();
+                        // this.visible_play = true;
                         // document.getElementById("start_button").style.visibility = 'visible';
                         break;
-                    case "start":
-                        this.visible = true;
+                    case "turn":
+                        this.setTurn(msg.your_turn, msg.username);
+                        // this.fetchBoard(false);
+                        this.fetchUsername();
+                        //
+                        // this.fetchUsername();
                         // dodałem zamykanie połączenia przed przejściem na inną stronę
-                        this.lobbySocket.close()
-                        this.$router.push('/board');
-                        break;
-                    case "dice":
-                        this.message = "(websocket) You get " + msg.number;
+                        // this.lobbySocket.close()
+                        // this.$router.push('/board');
                         break;
                 }
+            },
+            async n() {
+                await axiosSessionBoard.get(baseUrl + '/api/board/')
+                            .then(response => {
+                                console.log("GET BOARD")
+                                console.log(response)
+                                var board = JSON.parse(JSON.stringify(response.data))
+                                // this.boardConfig = null
+                                // this.attachBoard(response.data)
+                                this.boardConfig = board
+                            })
+                            .catch(error => {
+                                console.log("ERROR")
+                                console.log(error.response);
+                            });
             },
             onMessageTransaction(event) {
                 let msg = JSON.parse(event.data);
@@ -490,27 +515,52 @@
             },
             startTurn() {
                 console.log("start turn");
-                // this.boardSocket.send(JSON.stringify({
-                //     'action': 'game_start',
-                // }));
-                axiosSession.get(baseUrl + '/api/dice-roll/')
+                axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
                     .then(response => {
-                        this.message = "Wyrzucono: " + response.data.number + ", czyli stajesz na polu numer " + response.data.field_id;
-                        // let place_id = response.data.place_id;
-
+                        console.log(response.data);
+                        this.dice = "Rzuciłeś " + response.data["number"];
+                        this.showBuyOption();
+                        this.visible_play = false;
+                        this.visible_end = true;
+                        // this.fetchBoard(false);
+                        this.sendUpdate();
                     })
                     .catch(error => {
                         console.log(error);
                     });
             },
-            agree() {
-                console.log("agree");
+            endTurn() {
+                console.log("End Turn");
+                this.boardSocket.send(JSON.stringify({
+                    "action": "end_turn"
+                }))
+                this.visible_end = false;
+                this.visible_houses = false;
+                this.dice = null;
             },
-            disagree() {
-                console.log("disagree");
+            showBuyOption() {
+                this.visible_houses = true;
+            },
+            buyHouses() {
+                console.log("buyHouses");
+            },
+            sendUpdate() {
+                this.boardSocket.send(JSON.stringify({
+                    "action": "update"
+                }))
+            },
+            setTurn(myTurn, userTurn) {
+                this.myTurn = myTurn;
+                // console.log(response.data)
+                if (this.myTurn === true) {
+                    this.turn = "Twoja tura";
+                    this.visible_play = true;
+                } else {
+                    this.turn = "Teraz gra " + userTurn;
+                }
             },
             fetchTransactions() {
-                axiosSession.get(baseUrl + '/api/transaction/')
+                axiosSessionBoard.get(baseUrl + '/api/transaction/')
                     .then(response => {
                         this.sendByAuth = response.data["send_by_auth"]
                         this.sendByOthers = response.data["send_by_others"]
@@ -524,33 +574,96 @@
                     });
             },
             fetchUsername() {
-                axiosSession.get(baseUrl + '/api/auth-user/')
+                axiosSessionBoard.get(baseUrl + '/api/auth-user/')
                     .then(response => {
                         this.myUsername = response.data["username"]
                         this.budget = response.data["budget"]
                         this.currentField = response.data["field"]
-
                     })
                     .catch(error => {
                         console.log(error);
                     });
             },
             fetchPlayingUsers() {
-                axiosSession.get(baseUrl + '/api/playing-users/')
+                axiosSessionBoard.get(baseUrl + '/api/playing-users/')
                     .then(response => {
                         this.playingUsers = response.data
+                        console.log(this.playingUsers)
 
                     })
                     .catch(error => {
                         console.log(error);
                     });
             },
-            fetchBoard() {
-                axiosSession.get(baseUrl + '/api/board/')
+            fetchBoard(first) {
+                axiosSessionBoard.get(baseUrl + '/api/board/')
                     .then(response => {
                         console.log(response.data)
+                        this.boardConfig = {}
+                        // this.attachBoard(response.data)
                         this.boardConfig = response.data
-                        Object.entries(this.boardConfig).map((item, index) => {
+                        if (first == true) {
+                            this.configureBoard()
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error.response.data);
+                    });
+            },
+            attachBoard(board) {
+                console.log("ATTACHING BOARD")
+                this.boardConfig = board;
+
+                for(var key in board) {
+                    var arr = [];
+                    if (board[key].users != null) {
+                        var users = board[key].users;
+                        arr = Array.from(users)
+                        console.log(key)
+                        console.log(arr)
+                        console.log(this.boardConfig[key].users)
+                        this.boardConfig[key].users = null
+                        this.boardConfig[key].users = Array.from(users)
+                        this.boardConfig[key].users = arr
+                        // this.boardConfig[key].users = Object.assign({}, this.boardConfig[key].users, arr);
+
+                        console.log(this.boardConfig[key].users)
+                        for (let i = 0; i < users.length; i += 1) {
+                            // arr.push(users[i]);
+                            console.log(users[i]);
+                            // this.boardConfig["3"].users.splice(0, 1, 7)
+                            this.$set(this.boardConfig["3"].users, i, [])
+                            // this.boardConfig[key].users.splice(i, 1, users[i])
+                            // Vue.set(this.boardConfig[key].users, i, users[i]);
+
+                        }
+                        // for (var i = 0; i < users.length; i += 1) {
+                        //   Vue.set(this.boardConfig[key].users, i, users[i]);
+                        // }
+                    }
+                }
+                Object.entries(this.boardConfig).map((item, index) => {
+                    // if (index + 1 ==)
+                    if (item[1].users != null) {
+                        console.log(item[1].users);
+                        console.log(index)
+
+                    }
+                    // console.log(item[1].users);
+                    // console.log(index);
+                })
+            },
+            fetchCurrentUser() {
+                axiosSessionBoard.get(baseUrl + '/api/current-user/')
+                    .then(response => {
+                        this.setTurn(response.data["turn"], response.data["turn_user"])
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+            },
+            configureBoard() {
+                Object.entries(this.boardConfig).map((item, index) => {
                             if (
                                 item[1].type === "GO_TO_JAIL" ||
                                 item[1].type === "EMPTY" ||
@@ -624,14 +737,9 @@
                                 this.fourthQuarterConfig.push(item[1]);
                             }
                         });
-
-                    })
-                    .catch(error => {
-                        console.log(error.response.data);
-                    });
             },
             cancelTransaction(id) {
-                axiosSession.delete(baseUrl + '/api/transaction/' + id)
+                axiosSessionBoard.delete(baseUrl + '/api/transaction/' + id)
                     .then(response => {
                         console.log("transakcja usunięta" + response)
                            this.transactionSocket.send(JSON.stringify({
@@ -643,7 +751,7 @@
                     });
             },
             acceptTransaction(id) {
-                axiosSession.put(baseUrl + '/api/transaction/' + id + '/')
+                axiosSessionBoard.put(baseUrl + '/api/transaction/' + id + '/')
                     .then(response => {
                         console.log("transakcja zakończona" + response)
                            this.transactionSocket.send(JSON.stringify({
@@ -656,7 +764,7 @@
             },
             newTransaction() {
                 console.log(this.transaction)
-                axiosSession.post(baseUrl + '/api/transaction/', this.transaction)
+                axiosSessionBoard.post(baseUrl + '/api/transaction/', this.transaction)
                     .then(response => {
                         console.log("transakcja utworzona pomyślnie" + response)
                         this.transactionSocket.send(JSON.stringify({
@@ -667,8 +775,6 @@
                         console.log(error.response.data);
                     });
             }
-
-
         }
 
 
@@ -727,6 +833,10 @@
         flex-direction: column;
         justify-content: space-between;
     }
+    .turn, .dice {
+        display: flex;
+        justify-content: center;
+    }
 
     .inside_part {
         display: flex;
@@ -735,14 +845,14 @@
         align-content: center;
     }
 
-    .buttons {
+    .house-buy {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
 
-    .decide-buttons {
+    .buy_houses_buttons, .turn_buttons {
         display: flex;
         align-items: center;
         justify-content: center;

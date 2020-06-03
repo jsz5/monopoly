@@ -112,8 +112,6 @@ class BoardConsumer(WebsocketConsumer):
             self.board_group_name, self.channel_name
         )
         self.accept()
-        # pokazanie pierwszemu graczowi ze ma grac
-        # self.next_turn()
 
     def next_turn(self):
         user = PlayingUser.objects.filter(isPlaying=True).first()
@@ -126,8 +124,6 @@ class BoardConsumer(WebsocketConsumer):
             self.board_group_name, self.channel_name
         )
 
-    # TODO: Here
-    # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         action = text_data_json["action"]
@@ -137,7 +133,6 @@ class BoardConsumer(WebsocketConsumer):
         elif action == "end_turn":
             self.__end_turn()
 
-    # Receive message from room group
     def update_message(self, event):
         board = event["board"]
 
@@ -153,8 +148,8 @@ class BoardConsumer(WebsocketConsumer):
 
     def __end_turn(self):
         self.__set_order()
-        self.__send_update()
         self.__send_turn()
+        self.__send_update()
 
     def __set_order(self):
         playing_user = PlayingUser.objects.filter(isPlaying=True).first()
@@ -186,6 +181,7 @@ class BoardConsumer(WebsocketConsumer):
                 "owner": None,
             }
         for user in PlayingUser.objects.filter(isActive=True):
+            print(d[user.field.pk].values())
             if "users" in d[user.field.pk]:
                 d[user.field.pk]["users"].append(user.pk)
             else:
@@ -198,7 +194,6 @@ class BoardConsumer(WebsocketConsumer):
             d[asset.field.pk]["houses"] = (
                 asset.estateNumber if asset.estateNumber else 0
             )
-        print(d)
 
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name, {"type": "update_message", "board": d}
