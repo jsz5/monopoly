@@ -113,7 +113,7 @@ class BoardConsumer(WebsocketConsumer):
         )
         self.accept()
         # pokazanie pierwszemu graczowi ze ma grac
-        self.next_turn()
+        # self.next_turn()
 
     def next_turn(self):
         user = PlayingUser.objects.filter(isPlaying=True).first()
@@ -132,112 +132,77 @@ class BoardConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         action = text_data_json["action"]
 
-        if action == "game_start":
-            print("DICE")
-            dice = random.randint(1, 6)
-            dice = 1
-            print(dice)
-            user = PlayingUser.objects.filter(isPlaying=True).first()
-            print(user)
-            user.place = (user.place + dice) % Field.objects.all().count()
-            user.save()
-            message = {"user": user.id, "field": user.place}
-            print(user.place)
-            field = Field.objects.filter(id=user.place).first()
-            type = FieldType.objects.filter(id=field.field_type_id).first()
-            zone = Zone.objects.filter(id=field.zone_id).first()
-            print(field)
-            print(type)
-            print(zone)
-            if field.field_type_id == 7:
-                self.send(
-                    text_data=json.dumps(
-                        {
-                            "action": "card_buy",
-                            "roll": dice,
-                            "buy": field.name,
-                            "price": field.price,
-                            "zone": zone.name,
-                            "house": zone.price_per_house,
-                        }
-                    )
-                )
-            # Messages(type="move", parameter=message).save()
-            json_message = json.dumps(message)
-            # TODO: Mamy karte -> teraz jaka akcja
-        # else:
-        elif action == "buy_card":
-            # TU się dzije cos jak kupujemy kartę
-            user = PlayingUser.objects.filter(isPlaying=True).first()
-            field = Field.objects.filter(id=user.place).first()
-            self.send(
-                text_data=json.dumps(
-                    {
-                        "action": "message",
-                        "message": "Congratulation! You bought a card " + field.name,
-                    }
-                )
-            )
-            # Finished turn -> send message to update
+        if action == "update":
             self.__send_update()
         elif action == "end_turn":
-            self.__send_update()
+            self.__end_turn()
 
     # Receive message from room group
-    def board_message(self, event):
-        message = event["message"]
+    def update_message(self, event):
+        board = event["board"]
 
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({"action": message}))
+        self.send(text_data=json.dumps({"action": "update", "board": board}))
 
-    # def __end_turn(self):
+    def turn_message(self, event):
+        user = PlayingUser.objects.filter(isPlaying=True).first()
 
-    def __send_update(self):
+        event['username'] = User.objects.filter(id=user.user_id).first().username
+        event['your_turn'] = (user == PlayingUser.objects.filter(user=self.user).first())
+
+        self.send(text_data=json.dumps(event))
+
+    def __end_turn(self):
+        self.__set_order()
+        self.__send_update()
+        self.__send_turn()
+
+    def __set_order(self):
+        playing_user = PlayingUser.objects.filter(isPlaying=True).first()
+        next_place = playing_user.place % (PlayingUser.objects.count()) + 1
+        print(f"Now should play {next_place}")
+        playing_user.isPlaying = False
+        playing_user.save()
+        new_playing_user = PlayingUser.objects.get(place=next_place)
+        new_playing_user.isPlaying = True
+        new_playing_user.save()
+
+    def __send_turn(self):
         async_to_sync(self.channel_layer.group_send)(
-            self.board_group_name, {"type": "board_message", "message": "update"}
+            self.board_group_name, {
+                'type': 'turn_message',
+                'action': 'turn',
+            }
         )
 
+    def __send_update(self):
+        d = dict()
+        for obj in Field.objects.all():
+            d[obj.pk] = {
+                "name": obj.name,
+                "id": obj.id,
+                "type": obj.field_type.name,
+                "price": obj.price,
+                "zone": obj.zone.pk if obj.zone else None,
+                "owner": None,
+            }
+        for user in PlayingUser.objects.filter(isActive=True):
+            if "users" in d[user.field.pk]:
+                d[user.field.pk]["users"].append(user.pk)
+            else:
+                d[user.field.pk]["users"] = [user.pk]
 
-# class BoardConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         self.board_name = self.scope['url_route']['kwargs']['board_name']
-#         self.board_group_name = 'board_%s' % self.board_name
+        for asset in Asset.objects.filter(playingUser__isActive=True):
+            owner = User.objects.get(playing_users=asset.playingUser.pk)
+            d[asset.field.pk]["owner"] = owner.username
+            d[asset.field.pk]["isPledged"] = asset.isPledged
+            d[asset.field.pk]["houses"] = (
+                asset.estateNumber if asset.estateNumber else 0
+            )
+        print(d)
 
-#         # Join room group
-#         await self.channel_layer.group_add(
-#             self.board_group_name,
-#             self.channel_name
-#         )
-
-#         await self.accept()
-
-#     async def disconnect(self, close_code):
-#         # Leave bodar group
-#         await self.channel_layer.group_discard(
-#             self.channel_name
-#         )
-
-#     # Receive message from WebSocket
-#     async def receive(self, text_data):
-#         text_data_json = json.loads(text_data)
-#         message = text_data_json['button']
-
-#         # Send message to room group
-#         await self.channel_layer.group_send(
-#             self.board_group_name, {
-#                 'type': 'board_message',
-#                 'message': message
-#             }
-#         )
-
-#     # Receive message from room group
-#     async def board_message(self, event):
-#         message = 'Clicked' + event['message']
-
-#         # Send message to WebSocket
-#         await self.send(text_data=json.dumps({
-#             'message': message
-#         }))
+        async_to_sync(self.channel_layer.group_send)(
+            self.board_group_name, {"type": "update_message", "board": d}
+        )
 
 
 class TransactionConsumer(WebsocketConsumer):

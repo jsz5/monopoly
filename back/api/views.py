@@ -115,11 +115,14 @@ class PlayingUserListView(ListAPIView):
 class AuthUserView(APIView):
     def get(self, request, *args, **kwargs):
         auth_playing = PlayingUser.objects.get(user=request.user)
+        current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
         return Response(
             {
                 "username": request.user.username,
                 "budget": auth_playing.budget,
                 "field": auth_playing.field_id,
+                "turn": auth_playing.isPlaying,
+                "turn_user": User.objects.get(id=current_playing_id).username
             }
         )
 
@@ -207,7 +210,7 @@ class DiceRollView(ListAPIView):
             user.save()
             # message = {"user": user.id, "field": user.place}
             # Messages(type="move", parameter=message).save()
-            return Response({"number": dice, 'new_field': user.field.name})
+            return Response({"number": dice, 'new_field': user.field.pk})
         else:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
 
