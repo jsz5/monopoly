@@ -129,6 +129,7 @@ class DiceRollView(ListAPIView):
             # action
             if field.field_type == 3:
                 # card
+                user.budget += random.choice([-1000, 2000, 1000])
                 pass
             elif field.field_type == 4:
                 # pay
