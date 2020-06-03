@@ -482,9 +482,9 @@
                 console.log("start turn");
                 axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
                     .then(response => {
-                        this.message = "Wyrzucono: " + response.data.number + ", czyli stajesz na polu numer " + response.data.field_id;
-                        // let place_id = response.data.place_id;
-
+                        this.showBuyOption();
+                        this.visible_play = false;
+                        this.visible_end = true;
                     })
                     .catch(error => {
                         console.log(error);
@@ -492,6 +492,9 @@
             },
             endTurn() {
                 console.log("agree");
+            },
+            showBuyOption() {
+                this.visible_houses = true;
             },
             buyHouses() {
                 console.log("buyHouses");
