@@ -59,28 +59,30 @@
                     <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
                 </v-sheet>
             </div>
-            <!--        <v-container fluid style="margin: 0px; padding: 0px; width: 20%" class="json_board_part">-->
-
-            <!--            <pre>{{ jsonBoard  }}</pre>-->
-            <!--        </v-container>-->
             <v-container class="inside_part">
-                <v-container class="log-info">
+                <v-container class="turn">
+                    <h2>{{turn}}</h2>
+                </v-container>
+                <v-container v-show="visible_houses" class="house-buy">
+                    <h2> Kupno domków</h2>
+                    <v-container class="buy_houses_buttons">
+                        <v-text-field id="house_id"></v-text-field>
+                        <v-text-field id="quantity"></v-text-field>
+                        <v-card-actions>
+                            <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
+                        </v-card-actions>
+                    </v-container>
                     <v-textarea id="logs" v-model="message"></v-textarea>
                 </v-container>
-                <v-card class="buttons">
+                <v-container class="turn_buttons">
                     <v-card-actions class="dice-button">
                         <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
                     </v-card-actions>
 
-                    <v-container class="decide-buttons">
-                        <v-card-actions>
-                            <v-btn v-show="visible_decide" class="mr-4" @click="agree">Tak</v-btn>
-                        </v-card-actions>
-                        <v-card-actions>
-                            <v-btn v-show="visible_decide" class="mr-4" @click="disagree">Nie</v-btn>
-                        </v-card-actions>
-                    </v-container>
-                </v-card>
+                    <v-card-actions>
+                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Nie</v-btn>
+                    </v-card-actions>
+                </v-container>
             </v-container>
             <div class="fourth_part_board">
                 <v-sheet
@@ -313,7 +315,7 @@
 </template>
 
 <script>
-    import axiosSession from "../utils/axiosSession"
+    import axiosSessionBoard from "../utils/axiosSessionBoard"
     import {getToken} from "../utils/cookies";
     import baseUrl from "../config";
 
@@ -323,8 +325,10 @@
             return {
                 boardConfig: {},
                 transactionSocket: undefined,
-                visible_play: false,
-                visible_decide: false,
+                visible_play: true,
+                visible_end: true,
+                visible_houses: true,
+                turn: '',
                 message: '',
                 // url_board: baseUrl + '/api/board/',
                 url: "ws://0.0.0.0:8000",
@@ -390,17 +394,6 @@
         },
 
         beforeMount() {
-            // axios
-            //   .get("/user?ID=12345")
-            //   .then(response => {
-            //     // handle success
-            //     console.log(response);
-            //   })
-            //   .catch(error => {
-            //     // handle error
-            //     console.log(error);
-            //   });
-
             this.fetchBoard()
             console.log("board")
             console.log(this.boardConfig)
@@ -415,29 +408,12 @@
                 // The page was just reloaded. Clear the value from local storage
                 // so that it will reload the next time this page is visited.
                 localStorage.removeItem('reloaded');
-                // this.prepareWebSocket()
+                this.prepareWebSocket()
             } else {
                 // Set a flag so that we know not to reload the page twice.
                 localStorage.setItem('reloaded', '1');
                 location.reload();
             }
-            this.prepareWebSocket()
-            // console.log(this.url_board);
-            //   const config = {
-            //     headers: {
-            //       // "X-CSRFToken": "jfI7rN1qHJo4qjVQStmgCopc5Erze7QmCJuwQEjFoQrO4b16Are27cu9AOGe3iYE",
-            //       'Authorization': 'Bearer ' + getToken(),
-            //       "Accept": "application/json"
-            //     }
-            //   };
-            //   console.log(config)
-            //   axios.get(this.url_board, config)
-            //       .then(response => {
-            //           console.log(response.data);
-            //       })
-            //       .catch(error => {
-            //           console.log(error);
-            //       });
         },
         methods: {
             prepareWebSocket() {
@@ -490,10 +466,7 @@
             },
             startTurn() {
                 console.log("start turn");
-                // this.boardSocket.send(JSON.stringify({
-                //     'action': 'game_start',
-                // }));
-                axiosSession.get(baseUrl + '/api/dice-roll/')
+                axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
                     .then(response => {
                         this.message = "Wyrzucono: " + response.data.number + ", czyli stajesz na polu numer " + response.data.field_id;
                         // let place_id = response.data.place_id;
@@ -503,14 +476,14 @@
                         console.log(error);
                     });
             },
-            agree() {
+            endTurn() {
                 console.log("agree");
             },
-            disagree() {
-                console.log("disagree");
+            buyHouses() {
+                console.log("buyHouses");
             },
             fetchTransactions() {
-                axiosSession.get(baseUrl + '/api/transaction/')
+                axiosSessionBoard.get(baseUrl + '/api/transaction/')
                     .then(response => {
                         this.sendByAuth = response.data["send_by_auth"]
                         this.sendByOthers = response.data["send_by_others"]
@@ -524,7 +497,7 @@
                     });
             },
             fetchUsername() {
-                axiosSession.get(baseUrl + '/api/auth-user/')
+                axiosSessionBoard.get(baseUrl + '/api/auth-user/')
                     .then(response => {
                         this.myUsername = response.data["username"]
                         this.budget = response.data["budget"]
@@ -536,7 +509,7 @@
                     });
             },
             fetchPlayingUsers() {
-                axiosSession.get(baseUrl + '/api/playing-users/')
+                axiosSessionBoard.get(baseUrl + '/api/playing-users/')
                     .then(response => {
                         this.playingUsers = response.data
 
@@ -546,7 +519,7 @@
                     });
             },
             fetchBoard() {
-                axiosSession.get(baseUrl + '/api/board/')
+                axiosSessionBoard.get(baseUrl + '/api/board/')
                     .then(response => {
                         console.log(response.data)
                         this.boardConfig = response.data
@@ -631,7 +604,7 @@
                     });
             },
             cancelTransaction(id) {
-                axiosSession.delete(baseUrl + '/api/transaction/' + id)
+                axiosSessionBoard.delete(baseUrl + '/api/transaction/' + id)
                     .then(response => {
                         console.log("transakcja usunięta" + response)
                            this.transactionSocket.send(JSON.stringify({
@@ -643,7 +616,7 @@
                     });
             },
             acceptTransaction(id) {
-                axiosSession.put(baseUrl + '/api/transaction/' + id + '/')
+                axiosSessionBoard.put(baseUrl + '/api/transaction/' + id + '/')
                     .then(response => {
                         console.log("transakcja zakończona" + response)
                            this.transactionSocket.send(JSON.stringify({
@@ -656,7 +629,7 @@
             },
             newTransaction() {
                 console.log(this.transaction)
-                axiosSession.post(baseUrl + '/api/transaction/', this.transaction)
+                axiosSessionBoard.post(baseUrl + '/api/transaction/', this.transaction)
                     .then(response => {
                         console.log("transakcja utworzona pomyślnie" + response)
                         this.transactionSocket.send(JSON.stringify({
@@ -667,8 +640,6 @@
                         console.log(error.response.data);
                     });
             }
-
-
         }
 
 
