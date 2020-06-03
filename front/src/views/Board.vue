@@ -66,13 +66,24 @@
                 <v-container v-show="visible_houses" class="house-buy">
                     <h2> Kupno domków</h2>
                     <v-container class="buy_houses_buttons">
-                        <v-text-field id="house_id"></v-text-field>
-                        <v-text-field id="quantity"></v-text-field>
+                        <v-col sm="4" md="2">
+                          <v-text-field
+                            label="ID pola"
+                            outlined
+                            v-model="house_id"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col sm="4" md="2">
+                          <v-text-field
+                            label="ilość domków"
+                            outlined
+                            v-model="house_quantity"
+                          ></v-text-field>
+                        </v-col>
                         <v-card-actions>
                             <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
                         </v-card-actions>
                     </v-container>
-                    <v-textarea id="logs" v-model="message"></v-textarea>
                 </v-container>
                 <v-container class="turn_buttons">
                     <v-card-actions class="dice-button">
@@ -80,7 +91,7 @@
                     </v-card-actions>
 
                     <v-card-actions>
-                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Nie</v-btn>
+                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
                     </v-card-actions>
                 </v-container>
             </v-container>
@@ -325,9 +336,12 @@
             return {
                 boardConfig: {},
                 transactionSocket: undefined,
-                visible_play: true,
-                visible_end: true,
-                visible_houses: true,
+                visible_play: false,
+                visible_end: false,
+                visible_houses: false,
+                house_quantity: null,
+                house_id: null,
+                myTurn: false,
                 turn: '',
                 message: '',
                 // url_board: baseUrl + '/api/board/',
@@ -437,7 +451,7 @@
 
                 switch (msg.action) {
                     case "turn":
-                        this.visible_play = true;
+                        // this.visible_play = true;
                         // document.getElementById("start_button").style.visibility = 'visible';
                         break;
                     case "start":
@@ -502,6 +516,14 @@
                         this.myUsername = response.data["username"]
                         this.budget = response.data["budget"]
                         this.currentField = response.data["field"]
+                        this.myTurn = response.data["turn"]
+                        console.log(response.data)
+                        if (this.myTurn == true) {
+                            this.turn = "Twoja tura"
+                            this.visible_play = true
+                        } else {
+                            this.turn = "Teraz gra " + response.data["turn_user"]
+                        }
 
                     })
                     .catch(error => {
@@ -512,6 +534,7 @@
                 axiosSessionBoard.get(baseUrl + '/api/playing-users/')
                     .then(response => {
                         this.playingUsers = response.data
+                        console.log(this.playingUsers)
 
                     })
                     .catch(error => {
@@ -698,6 +721,10 @@
         flex-direction: column;
         justify-content: space-between;
     }
+    .turn {
+        display: flex;
+        justify-content: center;
+    }
 
     .inside_part {
         display: flex;
@@ -706,14 +733,14 @@
         align-content: center;
     }
 
-    .buttons {
+    .house-buy {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
 
-    .decide-buttons {
+    .buy_houses_buttons, .turn_buttons {
         display: flex;
         align-items: center;
         justify-content: center;
