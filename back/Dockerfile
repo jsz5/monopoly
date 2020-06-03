@@ -6,7 +6,7 @@ RUN mkdir /code
 
 COPY ./requirements/requirements.txt /tmp/requirements.txt
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
     vim \
     nano \
     man \

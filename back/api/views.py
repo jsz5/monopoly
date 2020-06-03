@@ -125,15 +125,91 @@ class AuthUserView(APIView):
 
 
 class DiceRollView(ListAPIView):
+    """
+    Active and playing user dice roll, function modify standing field
+    """
+
     def get(self, request, *args, **kwargs):
-        dice = random.randint(1, 6)
-        user = PlayingUser.objects.filter(isPlaying=True).first()
-        print(user)
-        user.field_id = (user.field_id + dice) % Field.objects.all().count()
-        user.save()
-        # message = {"user": user.id, "field": user.place}
-        # Messages(type="move", parameter=message).save()
-        return Response({"number": dice, "field_id": user.field_id})
+        dice = random.randint(1, 12)
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if user.isActive and user.isPlaying:
+            field_count = Field.objects.all().count()
+            if int(user.field.pk) + dice > field_count:
+                user.budget += 2000
+                field = Field.objects.get(pk=int(user.field.pk + dice - field_count))
+            else:
+                field = Field.objects.get(pk=int(user.field.pk + dice))
+
+            try:
+                asset = Asset.objects.get(field=field)
+                if asset.isPledged:
+                    asset = None
+            except Asset.DoesNotExist:
+                asset = None
+
+            # action
+            if field.field_type == 3:
+                # card
+                user.budget += random.choice([-1000, 2000, 1000])
+                pass
+            elif field.field_type == 4:
+                # pay
+                user.budget -= 2000
+            elif field.field_type == 5:
+                # go to jail
+                field = Field.objects.get(field_type=5)
+            elif field.field_type == 7:
+                #     normal
+                if asset and asset.playingUser != user:
+                    estate = Estate.objects.get(field=field)
+                    if asset.estateNumber == 0:
+                        user.budget -= estate.fee_zero_houses
+                    elif asset.estateNumber == 1:
+                        user.budget -= estate.fee_one_house
+                    elif asset.estateNumber == 2:
+                        user.budget -= estate.fee_two_houses
+                    elif asset.estateNumber == 3:
+                        user.budget -= estate.fee_three_houses
+                    elif asset.estateNumber == 4:
+                        user.budget -= estate.fee_four_houses
+                    elif asset.estateNumber == 5:
+                        user.budget -= estate.fee_five_houses
+            elif field.field_type == 8:
+                #     power plant
+                # todo fix it
+                if asset and asset.playingUser != user:
+                    user.budget -= dice * 200
+            elif field.field_type == 9:
+                #     transport
+                # todo fix it
+                if asset and asset.playingUser != user:
+                    user.budget -= 2000
+
+            if user.budget < 0:
+                for asset in Asset.objects.filter(playingUser=user):
+                    user.budget += asset.price + asset.estateNumber * asset.field.zone.price_per_house
+                    asset.delete()
+                    if user.budget > 0:
+                        break
+
+            if user.budget < 0:
+                user.isActive = False
+                return Response("Przegrana gra")
+
+            # todo prison
+            # todo endpoint zakoncz ture
+            # todo saldo użytkownika dogadac
+
+            user.field = field
+            user.save()
+            # message = {"user": user.id, "field": user.place}
+            # Messages(type="move", parameter=message).save()
+            return Response({"number": dice, 'new_field': user.field.name})
+        else:
+            return Response("Użytkownik nie ma prawa ruchu", status=403)
 
 
 class LobbyView(TemplateView):
