@@ -60,6 +60,9 @@
                 </v-sheet>
             </div>
             <v-container class="inside_part">
+                <v-container class="info">
+                    <h2>{{dice}}</h2>
+                </v-container>
                 <v-container class="turn">
                     <h2>{{turn}}</h2>
                 </v-container>
@@ -343,6 +346,7 @@
                 house_id: null,
                 myTurn: false,
                 turn: '',
+                dice: null,
                 message: '',
                 // url_board: baseUrl + '/api/board/',
                 url: "ws://0.0.0.0:8000",
@@ -450,18 +454,19 @@
                 console.log(msg)
 
                 switch (msg.action) {
-                    case "turn":
+                    case "update":
+                        console.log((msg.board));
+                        this.boardConfig = null;
+                        this.boardConfig = msg.board;
+                        // this.configureBoard();
                         // this.visible_play = true;
                         // document.getElementById("start_button").style.visibility = 'visible';
                         break;
-                    case "start":
-                        this.visible = true;
+                    case "turn":
+                        this.setTurn(msg.your_turn, msg.username);
                         // dodałem zamykanie połączenia przed przejściem na inną stronę
-                        this.lobbySocket.close()
-                        this.$router.push('/board');
-                        break;
-                    case "dice":
-                        this.message = "(websocket) You get " + msg.number;
+                        // this.lobbySocket.close()
+                        // this.$router.push('/board');
                         break;
                 }
             },
@@ -482,22 +487,45 @@
                 console.log("start turn");
                 axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
                     .then(response => {
+                        console.log(response.data);
+                        this.dice = "Rzuciłeś " + response.data["number"];
                         this.showBuyOption();
                         this.visible_play = false;
                         this.visible_end = true;
+                        this.sendUpdate();
                     })
                     .catch(error => {
                         console.log(error);
                     });
             },
             endTurn() {
-                console.log("agree");
+                console.log("End Turn");
+                this.boardSocket.send(JSON.stringify({
+                    "action": "end_turn"
+                }))
+                this.visible_end = false;
+                this.visible_houses = false;
             },
             showBuyOption() {
                 this.visible_houses = true;
             },
             buyHouses() {
                 console.log("buyHouses");
+            },
+            sendUpdate() {
+                this.boardSocket.send(JSON.stringify({
+                    "action": "update"
+                }))
+            },
+            setTurn(myTurn, userTurn) {
+                this.myTurn = myTurn;
+                // console.log(response.data)
+                if (this.myTurn === true) {
+                    this.turn = "Twoja tura";
+                    this.visible_play = true;
+                } else {
+                    this.turn = "Teraz gra " + userTurn;
+                }
             },
             fetchTransactions() {
                 axiosSessionBoard.get(baseUrl + '/api/transaction/')
@@ -519,15 +547,7 @@
                         this.myUsername = response.data["username"]
                         this.budget = response.data["budget"]
                         this.currentField = response.data["field"]
-                        this.myTurn = response.data["turn"]
-                        console.log(response.data)
-                        if (this.myTurn == true) {
-                            this.turn = "Twoja tura"
-                            this.visible_play = true
-                        } else {
-                            this.turn = "Teraz gra " + response.data["turn_user"]
-                        }
-
+                        this.setTurn(response.data["turn"], response.data["turn_user"])
                     })
                     .catch(error => {
                         console.log(error);
@@ -549,7 +569,14 @@
                     .then(response => {
                         console.log(response.data)
                         this.boardConfig = response.data
-                        Object.entries(this.boardConfig).map((item, index) => {
+                        this.configureBoard()
+                    })
+                    .catch(error => {
+                        console.log(error.response.data);
+                    });
+            },
+            configureBoard() {
+                Object.entries(this.boardConfig).map((item, index) => {
                             if (
                                 item[1].type === "GO_TO_JAIL" ||
                                 item[1].type === "EMPTY" ||
@@ -623,11 +650,6 @@
                                 this.fourthQuarterConfig.push(item[1]);
                             }
                         });
-
-                    })
-                    .catch(error => {
-                        console.log(error.response.data);
-                    });
             },
             cancelTransaction(id) {
                 axiosSessionBoard.delete(baseUrl + '/api/transaction/' + id)
@@ -724,7 +746,7 @@
         flex-direction: column;
         justify-content: space-between;
     }
-    .turn {
+    .turn, .dice {
         display: flex;
         justify-content: center;
     }
