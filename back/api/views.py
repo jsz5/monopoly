@@ -124,6 +124,18 @@ class AuthUserView(APIView):
         )
 
 
+class CurrentPlayer(APIView):
+    def get(self, request, *args, **kwargs):
+        current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
+        auth_playing = PlayingUser.objects.get(user=request.user)
+        return Response(
+            {
+                "turn": auth_playing.isPlaying,
+                "turn_user": User.objects.get(id=current_playing_id).username
+            }
+        )
+
+
 class DiceRollView(ListAPIView):
     """
     Active and playing user dice roll, function modify standing field
@@ -131,6 +143,7 @@ class DiceRollView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
         dice = random.randint(1, 12)
+        print(f"Gracz {request.user} wyrzucił {dice}")
         try:
             user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
@@ -142,7 +155,7 @@ class DiceRollView(ListAPIView):
                 field = Field.objects.get(pk=int(user.field.pk + dice - field_count))
             else:
                 field = Field.objects.get(pk=int(user.field.pk + dice))
-
+            print(f"Stanął na {field.name}")
             try:
                 asset = Asset.objects.get(field=field)
                 if asset.isPledged:

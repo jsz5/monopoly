@@ -21,6 +21,7 @@ urlpatterns = [
         name="playing-user-ready",
     ),
     path("playing-users/", views.PlayingUserListView.as_view(), name="playing-users"),
+    path("current-user/", views.CurrentPlayer.as_view(), name="current-user"),
     path("dice-roll/", views.DiceRollView.as_view(), name="dice-roll"),
     path("board/", views.BoardView.as_view(), name="board"),
     path("field/<int:pk>/", views.FieldView.as_view(), name="board"),
