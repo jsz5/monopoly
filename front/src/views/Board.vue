@@ -22,9 +22,12 @@
                 </span><br>
                 <span v-if="field.type=='START'"><b>START</b></span>
                 <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
+                </v-icon >
+<!--                <div v-if="field.users.length  > 0">-->
+                    <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
                 </v-icon>
-                <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                </v-icon>
+<!--                </div>-->
+
                 <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
                 <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
                 <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
@@ -60,7 +63,7 @@
                 </v-sheet>
             </div>
             <v-container class="inside_part">
-                <v-container class="info">
+                <v-container class="dice">
                     <h2>{{dice}}</h2>
                 </v-container>
                 <v-container class="turn">
@@ -412,13 +415,14 @@
         },
 
         beforeMount() {
-            this.fetchBoard()
+            this.fetchBoard(true)
             console.log("board")
             console.log(this.boardConfig)
 
             this.fetchTransactions()
             this.fetchUsername()
             this.fetchPlayingUsers()
+            this.fetchCurrentUser()
 
         },
         mounted() {
@@ -455,20 +459,46 @@
 
                 switch (msg.action) {
                     case "update":
-                        console.log((msg.board));
-                        this.boardConfig = null;
+                        console.log(msg.board);
                         this.boardConfig = msg.board;
+                        // this.boardConfig = Object.assign({}, this.boardConfig, msg.board)
+                        // this.attachBoard(msg.board);
+                        // this.boardConfig = JSON.parse(JSON.stringify(msg.board));
+                        // console.log(msg.board);
+                        // this.n();
+                        // this.fetchBoard(false);
+                        // this.boardConfig["3"].users = [3,5];
+                        this.fetchUsername();
                         // this.configureBoard();
                         // this.visible_play = true;
                         // document.getElementById("start_button").style.visibility = 'visible';
                         break;
                     case "turn":
                         this.setTurn(msg.your_turn, msg.username);
+                        // this.fetchBoard(false);
+                        this.fetchUsername();
+                        //
+                        // this.fetchUsername();
                         // dodałem zamykanie połączenia przed przejściem na inną stronę
                         // this.lobbySocket.close()
                         // this.$router.push('/board');
                         break;
                 }
+            },
+            async n() {
+                await axiosSessionBoard.get(baseUrl + '/api/board/')
+                            .then(response => {
+                                console.log("GET BOARD")
+                                console.log(response)
+                                var board = JSON.parse(JSON.stringify(response.data))
+                                // this.boardConfig = null
+                                // this.attachBoard(response.data)
+                                this.boardConfig = board
+                            })
+                            .catch(error => {
+                                console.log("ERROR")
+                                console.log(error.response);
+                            });
             },
             onMessageTransaction(event) {
                 let msg = JSON.parse(event.data);
@@ -492,6 +522,7 @@
                         this.showBuyOption();
                         this.visible_play = false;
                         this.visible_end = true;
+                        // this.fetchBoard(false);
                         this.sendUpdate();
                     })
                     .catch(error => {
@@ -505,6 +536,7 @@
                 }))
                 this.visible_end = false;
                 this.visible_houses = false;
+                this.dice = null;
             },
             showBuyOption() {
                 this.visible_houses = true;
@@ -547,7 +579,6 @@
                         this.myUsername = response.data["username"]
                         this.budget = response.data["budget"]
                         this.currentField = response.data["field"]
-                        this.setTurn(response.data["turn"], response.data["turn_user"])
                     })
                     .catch(error => {
                         console.log(error);
@@ -564,16 +595,72 @@
                         console.log(error);
                     });
             },
-            fetchBoard() {
+            fetchBoard(first) {
                 axiosSessionBoard.get(baseUrl + '/api/board/')
                     .then(response => {
                         console.log(response.data)
+                        this.boardConfig = {}
+                        // this.attachBoard(response.data)
                         this.boardConfig = response.data
-                        this.configureBoard()
+                        if (first == true) {
+                            this.configureBoard()
+                        }
                     })
                     .catch(error => {
                         console.log(error.response.data);
                     });
+            },
+            attachBoard(board) {
+                console.log("ATTACHING BOARD")
+                this.boardConfig = board;
+
+                for(var key in board) {
+                    var arr = [];
+                    if (board[key].users != null) {
+                        var users = board[key].users;
+                        arr = Array.from(users)
+                        console.log(key)
+                        console.log(arr)
+                        console.log(this.boardConfig[key].users)
+                        this.boardConfig[key].users = null
+                        this.boardConfig[key].users = Array.from(users)
+                        this.boardConfig[key].users = arr
+                        // this.boardConfig[key].users = Object.assign({}, this.boardConfig[key].users, arr);
+
+                        console.log(this.boardConfig[key].users)
+                        for (let i = 0; i < users.length; i += 1) {
+                            // arr.push(users[i]);
+                            console.log(users[i]);
+                            // this.boardConfig["3"].users.splice(0, 1, 7)
+                            this.$set(this.boardConfig["3"].users, i, [])
+                            // this.boardConfig[key].users.splice(i, 1, users[i])
+                            // Vue.set(this.boardConfig[key].users, i, users[i]);
+
+                        }
+                        // for (var i = 0; i < users.length; i += 1) {
+                        //   Vue.set(this.boardConfig[key].users, i, users[i]);
+                        // }
+                    }
+                }
+                Object.entries(this.boardConfig).map((item, index) => {
+                    // if (index + 1 ==)
+                    if (item[1].users != null) {
+                        console.log(item[1].users);
+                        console.log(index)
+
+                    }
+                    // console.log(item[1].users);
+                    // console.log(index);
+                })
+            },
+            fetchCurrentUser() {
+                axiosSessionBoard.get(baseUrl + '/api/current-user/')
+                    .then(response => {
+                        this.setTurn(response.data["turn"], response.data["turn_user"])
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
             },
             configureBoard() {
                 Object.entries(this.boardConfig).map((item, index) => {
