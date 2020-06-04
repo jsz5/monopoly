@@ -2,7 +2,7 @@ from django.core import management
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
-from api.models import Action, FieldType, Zone, Field, Estate
+from api.models import Action, FieldType, Zone, Field, Estate, Card
 
 
 class Command(BaseCommand):
@@ -15,6 +15,7 @@ class Command(BaseCommand):
         Zone.objects.all().delete()
         Field.objects.all().delete()
         Estate.objects.all().delete()
+        Card.objects.all().delete()
 
         fixtures = [
             "users.json",
@@ -23,6 +24,7 @@ class Command(BaseCommand):
             "zone.json",
             "field.json",
             "estate.json",
+            "card.json",
         ]
 
         for fixture in fixtures:
