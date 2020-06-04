@@ -13,7 +13,7 @@
     "model": "api.field",
     "pk": 2,
     "fields": {
-      "name": "1.1",
+      "name": "Ulica Konopacka",
       "price": 600,
       "field_type": 7,
       "zone": 1
@@ -23,7 +23,7 @@
     "model": "api.field",
     "pk": 3,
     "fields": {
-      "name": "Karta",
+      "name": "Kasa Społeczna",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -33,7 +33,7 @@
     "model": "api.field",
     "pk": 4,
     "fields": {
-      "name": "1.2",
+      "name": "Ulica stalowa",
       "price": 600,
       "field_type": 7,
       "zone": 1
@@ -53,7 +53,7 @@
     "model": "api.field",
     "pk": 6,
     "fields": {
-      "name": "Transport",
+      "name": "Dworzec Zachodni",
       "price": 2000,
       "field_type": 9,
       "zone": null
@@ -63,7 +63,7 @@
     "model": "api.field",
     "pk": 7,
     "fields": {
-      "name": "2.1",
+      "name": "Ulica Radzymińska",
       "price": 1000,
       "field_type": 7,
       "zone": 2
@@ -73,7 +73,7 @@
     "model": "api.field",
     "pk": 8,
     "fields": {
-      "name": "Karta",
+      "name": "Szansa",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -83,7 +83,7 @@
     "model": "api.field",
     "pk": 9,
     "fields": {
-      "name": "2.2",
+      "name": "Ulica Jagielońska",
       "price": 1000,
       "field_type": 7,
       "zone": 2
@@ -93,7 +93,7 @@
     "model": "api.field",
     "pk": 10,
     "fields": {
-      "name": "2.3",
+      "name": "Ulica Targowa",
       "price": 1200,
       "field_type": 7,
       "zone": 2
@@ -113,7 +113,7 @@
     "model": "api.field",
     "pk": 12,
     "fields": {
-      "name": "3.1",
+      "name": "Ulica Płowiecka",
       "price": 1400,
       "field_type": 7,
       "zone": 3
@@ -133,7 +133,7 @@
     "model": "api.field",
     "pk": 14,
     "fields": {
-      "name": "3.2",
+      "name": "Ulica Marsa",
       "price": 1400,
       "field_type": 7,
       "zone": 3
@@ -143,7 +143,7 @@
     "model": "api.field",
     "pk": 15,
     "fields": {
-      "name": "3.3",
+      "name": "Ulica Grochowska",
       "price": 1600,
       "field_type": 7,
       "zone": 3
@@ -153,7 +153,7 @@
     "model": "api.field",
     "pk": 16,
     "fields": {
-      "name": "Transport 2",
+      "name": "Dworzec Gdański",
       "price": 2000,
       "field_type": 9,
       "zone": null
@@ -163,7 +163,7 @@
     "model": "api.field",
     "pk": 17,
     "fields": {
-      "name": "4.1",
+      "name": "Ulica Obozowa",
       "price": 1800,
       "field_type": 7,
       "zone": 4
@@ -173,7 +173,7 @@
     "model": "api.field",
     "pk": 18,
     "fields": {
-      "name": "Karta",
+      "name": "Szansa",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -183,7 +183,7 @@
     "model": "api.field",
     "pk": 19,
     "fields": {
-      "name": "4.2",
+      "name": "Ulica Górczewska",
       "price": 1800,
       "field_type": 7,
       "zone": 4
@@ -193,7 +193,7 @@
     "model": "api.field",
     "pk": 20,
     "fields": {
-      "name": "4.3",
+      "name": "Ulica Wolska",
       "price": 2000,
       "field_type": 7,
       "zone": 4
@@ -203,7 +203,7 @@
     "model": "api.field",
     "pk": 21,
     "fields": {
-      "name": "Puste",
+      "name": "Darmowy Parking",
       "price": null,
       "field_type": 6,
       "zone": null
@@ -213,7 +213,7 @@
     "model": "api.field",
     "pk": 22,
     "fields": {
-      "name": "5.1",
+      "name": "Ulica Mickiewicza",
       "price": 2200,
       "field_type": 7,
       "zone": 5
@@ -223,7 +223,7 @@
     "model": "api.field",
     "pk": 23,
     "fields": {
-      "name": "Karta",
+      "name": "Szansa",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -233,7 +233,7 @@
     "model": "api.field",
     "pk": 24,
     "fields": {
-      "name": "5.2",
+      "name": "Ulica Słowackiego",
       "price": 2200,
       "field_type": 7,
       "zone": 5
@@ -243,7 +243,7 @@
     "model": "api.field",
     "pk": 25,
     "fields": {
-      "name": "5.3",
+      "name": "Plac Wilsona",
       "price": 2400,
       "field_type": 7,
       "zone": 5
@@ -253,7 +253,7 @@
     "model": "api.field",
     "pk": 26,
     "fields": {
-      "name": "Transpor 3",
+      "name": "Dworzec Wschodni",
       "price": 2000,
       "field_type": 9,
       "zone": null
@@ -263,7 +263,7 @@
     "model": "api.field",
     "pk": 27,
     "fields": {
-      "name": "6.1",
+      "name": "Ulica Świętokszyska",
       "price": 2600,
       "field_type": 7,
       "zone": 6
@@ -273,7 +273,7 @@
     "model": "api.field",
     "pk": 28,
     "fields": {
-      "name": "6.2",
+      "name": "Krakowskie Przedmieście",
       "price": 2600,
       "field_type": 7,
       "zone": 6
@@ -283,7 +283,7 @@
     "model": "api.field",
     "pk": 29,
     "fields": {
-      "name": "Elektowania 2",
+      "name": "Wodociągi",
       "price": 1500,
       "field_type": 8,
       "zone": null
@@ -293,7 +293,7 @@
     "model": "api.field",
     "pk": 30,
     "fields": {
-      "name": "6.3",
+      "name": "Nowy Świat",
       "price": 2800,
       "field_type": 7,
       "zone": 6
@@ -313,7 +313,7 @@
     "model": "api.field",
     "pk": 32,
     "fields": {
-      "name": "7.1",
+      "name": "Plac Trzech Krzyży,,
       "price": 3000,
       "field_type": 7,
       "zone": 7
@@ -323,7 +323,7 @@
     "model": "api.field",
     "pk": 33,
     "fields": {
-      "name": "7.2",
+      "name": "Ulica Marszałkowska",
       "price": 3000,
       "field_type": 7,
       "zone": 7
@@ -333,7 +333,7 @@
     "model": "api.field",
     "pk": 34,
     "fields": {
-      "name": "Karta",
+      "name": "Kasa Społeczna",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -343,7 +343,7 @@
     "model": "api.field",
     "pk": 35,
     "fields": {
-      "name": "7.3",
+      "name": "Aleje Jerozolimskie",
       "price": null,
       "field_type": 7,
       "zone": 7
@@ -353,7 +353,7 @@
     "model": "api.field",
     "pk": 36,
     "fields": {
-      "name": "Transport 4",
+      "name": "Dworzec Centralny",
       "price": 2000,
       "field_type": 9,
       "zone": null
@@ -363,7 +363,7 @@
     "model": "api.field",
     "pk": 37,
     "fields": {
-      "name": "Karta",
+      "name": "Szansa",
       "price": null,
       "field_type": 3,
       "zone": null
@@ -373,7 +373,7 @@
     "model": "api.field",
     "pk": 38,
     "fields": {
-      "name": "8.1",
+      "name": "Ulica Belwederska",
       "price": 3500,
       "field_type": 7,
       "zone": 8
@@ -393,7 +393,7 @@
     "model": "api.field",
     "pk": 40,
     "fields": {
-      "name": "8.2",
+      "name": "Aleje Ujazdowskie",
       "price": 4000,
       "field_type": 7,
       "zone": 8

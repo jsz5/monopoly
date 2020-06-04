@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
-from api.models import PlayingUser, FieldType, Field, Messages, Asset, Estate
+from api.models import PlayingUser, FieldType, Field, Messages, Asset, Estate, Card
 from rest_auth.serializers import LoginSerializer
 from rest_auth.views import LogoutView
 import random
@@ -28,6 +28,7 @@ from api.serializers import (
     EstateSerializer,
     FieldSerializer,
     FieldEstateSerializer,
+    CardSerializer
 )
 
 from django.views.generic import CreateView, TemplateView
@@ -145,87 +146,205 @@ class DiceRollView(ListAPIView):
     """
 
     def get(self, request, *args, **kwargs):
-        dice = random.randint(1, 12)
-        print(f"Gracz {request.user} wyrzucił {dice}")
+        self.dice = random.randint(1, 12)
+        self.response = {"number": self.dice}
         try:
-            user = PlayingUser.objects.get(user=request.user)
+            self.user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
             return Response("Nieprawidłowy użytkownik", status=403)
-        if user.isActive and user.isPlaying:
+        if self.user.isActive and self.user.isPlaying:
             field_count = Field.objects.all().count()
-            if int(user.field.pk) + dice > field_count:
-                user.budget += 2000
-                field = Field.objects.get(pk=int(user.field.pk + dice - field_count))
+            if int(self.user.field.pk) + self.dice > field_count:
+                self.user.budget += 2000
+                self.field = Field.objects.get(pk=int(self.user.field.pk + self.dice - field_count))
             else:
-                field = Field.objects.get(pk=int(user.field.pk + dice))
-            print(f"Stanął na {field.name}")
+                self.field = Field.objects.get(pk=int(self.user.field.pk + self.dice))
             try:
-                asset = Asset.objects.get(field=field)
-                if asset.isPledged:
-                    asset = None
+                self.asset = Asset.objects.get(field=self.field) if not self.asset.isPledged else None
             except Asset.DoesNotExist:
-                asset = None
+                self.asset = None
 
-            # action
-            if field.field_type == 3:
-                # card
-                user.budget += random.choice([-1000, 2000, 1000])
-                pass
-            elif field.field_type == 4:
-                # pay
-                user.budget -= 2000
-            elif field.field_type == 5:
-                # go to jail
-                field = Field.objects.get(field_type=5)
-            elif field.field_type == 7:
-                #     normal
-                if asset and asset.playingUser != user:
-                    estate = Estate.objects.get(field=field)
-                    if asset.estateNumber == 0:
-                        user.budget -= estate.fee_zero_houses
-                    elif asset.estateNumber == 1:
-                        user.budget -= estate.fee_one_house
-                    elif asset.estateNumber == 2:
-                        user.budget -= estate.fee_two_houses
-                    elif asset.estateNumber == 3:
-                        user.budget -= estate.fee_three_houses
-                    elif asset.estateNumber == 4:
-                        user.budget -= estate.fee_four_houses
-                    elif asset.estateNumber == 5:
-                        user.budget -= estate.fee_five_houses
-            elif field.field_type == 8:
-                #     power plant
-                # todo fix it
-                if asset and asset.playingUser != user:
-                    user.budget -= dice * 200
-            elif field.field_type == 9:
-                #     transport
-                # todo fix it
-                if asset and asset.playingUser != user:
-                    user.budget -= 2000
+            self.__check_field_type()
 
-            if user.budget < 0:
-                for asset in Asset.objects.filter(playingUser=user):
-                    user.budget += asset.price + asset.estateNumber * asset.field.zone.price_per_house
-                    asset.delete()
-                    if user.budget > 0:
-                        break
-
-            if user.budget < 0:
-                user.isActive = False
-                return Response("Przegrana gra")
+            self.user.field = self.field
+            self.user.save()
 
             # todo prison
-            # todo endpoint zakoncz ture
             # todo saldo użytkownika dogadac
-
-            user.field = field
-            user.save()
-            # message = {"user": user.id, "field": user.place}
-            # Messages(type="move", parameter=message).save()
-            return Response({"number": dice, 'new_field': user.field.pk})
+            return Response(self.response)
         else:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
+
+    def __check_field_type(self):
+        response = dict()
+        response['name'] = self.field.name
+        if self.field.field_type == 2:
+            # TODO: jail
+            response['action'] = 'visit jail'
+        elif self.field.field_type == 3:
+            # TODO: test
+            response['action'] = 'get card'
+            response['card'] = self.__card(self.user)
+        elif self.field.field_type == 4:
+            # TODO: pay albo dac w field.price cene albo ifem jak jest teraz
+            to_pay = 2000 if self.field.pk == 39 else 1000
+            self.user.budget -= to_pay
+            response['action'] = 'pay tax'
+            response['amount'] = to_pay
+        elif self.field.field_type == 5:
+            # TODO: go to jail
+            response['action'] = 'go to jail'
+        elif self.field.field_type == 7:
+            #     normal
+            # TODO: tests
+            response['action'] = 'normal card'
+            if self.asset and self.asset.playingUser != self.user:
+                estate = Estate.objects.get(field=self.field)
+                if self.asset.estateNumber == 0:
+                    fee = estate.fee_zero_houses
+                elif self.asset.estateNumber == 1:
+                    fee = estate.fee_one_house
+                elif self.asset.estateNumber == 2:
+                    fee = estate.fee_two_houses
+                elif self.asset.estateNumber == 3:
+                    fee = estate.fee_three_houses
+                elif self.asset.estateNumber == 4:
+                    fee = estate.fee_four_houses
+                elif self.estateNumber == 5:
+                    fee = estate.fee_five_houses
+                response['pay'] = fee
+                response['to_who'] = self.asset.playingUser.user.username #TODO: CHECK
+                self.user.budget -= fee
+        elif self.field.field_type == 8:
+            #     power plant
+            # todo: test
+            if self.asset and self.asset.playingUser != self.user:
+                # if player has one power plant
+                power_plants = Asset.objects.get(
+                    Q(field__in=Field.objects.filter(field_type=8)),
+                    Q(playingUser_id=self.asset.playingUser)
+                )
+                fee = self.dice * 400 if len(power_plants) == 1 else self.dice * 1000
+                self.user.budget -= fee
+                response['pay'] = fee
+                response['to_who'] = self.asset.playingUser.user.username
+        elif self.field.field_type == 9:
+            #     transport
+            # todo: test
+            transport = Asset.objects.get(
+                Q(field__in=Field.objects.filter(field_type=9)),
+                Q(playingUser_id=self.asset.playingUser)
+            )
+            if len(transport) == 1:
+                fee = 250
+            elif len(transport) == 2:
+                fee = 500
+            elif len(transport) == 3:
+                fee = 1000
+            elif len(transport) == 4:
+                fee = 2000
+            self.user.budget -= fee
+            response['pay'] = fee
+            response['to_who'] = self.asset.playingUser.user.username
+
+
+        if self.user.budget < 0:
+            for asset in Asset.objects.filter(playingUser=self.user):
+                self.user.budget += asset.price + asset.estateNumber * asset.field.zone.price_per_house
+                asset.delete()
+                if self.user.budget > 0:
+                    break
+
+        if self.user.budget < 0:
+            self.user.isActive = False
+            return Response("Przegrana gra")
+
+        # todo prison
+        # todo saldo użytkownika dogadac
+
+        self.user.field = self.field
+        self.user.save()
+        return response
+
+    def __card(self):
+        response = dict()
+        # Losujemy kartę
+        card_id = random.randint(1, Card.objects.count())
+        try:
+            card = Card.objects.get(id=card_id)
+        except Card.DoesNotExist:
+            return Response("Card does't exist", status=403)
+        card_data = CardSerializer(card).data
+
+        parameter = card_data["parameter"]
+        if card_data["action_id"] == 1:
+            # MOVE
+            # TODO: TEST
+            new_field_id = (self.field.pk + parameter["number"])
+            field_count = Field.objects.all().count()
+            if int(new_field_id) > field_count:
+                new_field_id = int(new_field_id) % field_count
+            elif int(new_field_id) <= 0:
+                new_field_id = new_field_id + field_count
+            self.user.field_id = new_field_id
+            self.field = Field.objects.get(pk=new_field_id)
+            self.user.save()
+            card_data["new_field_id"] = new_field_id
+            card_data['move'] = self.__check_field_type()
+        elif card_data["action_id"] == 2:
+            # MOVE TO
+            if 'dice' in parameter:
+                self.dice = random.randint(1, 12)
+                card_data['new_dice'] = self.dice
+            if 'field_type' in parameter:
+                new_field = Field.objects.filter(
+                    Q(field_type_id=parameter['field_type']),
+                    Q(id__gt=self.field.id)
+                ).order_by('-id').first()
+
+            elif 'field_id' in parameter:
+                new_field_id = parameter['field_id']
+                self.user.field_id = new_field_id
+                self.field = Field.objects.get(pk=new_field_id)
+                card_data['move'] = self.__check_field_type()
+        elif card_data["action_id"] == 4:
+            # PAY ALL USERS
+            for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
+                card_data["pay"] += parameter["pay"]
+                user_to_pay.budget += parameter["pay"]
+                self.user.budget -= parameter["pay"]
+                user_to_pay.save()
+        elif card_data["action_id"] == 5:
+            # PAY BANK
+            self.user.budget -= parameter["pay"]
+        elif card_data["action_id"] == 6:
+            # TODO: GET OUT OF JAIL
+            pass
+        elif card_data["action_id"] == 7:
+            # PAY_FOR_ASSETS
+            for _ in Asset.objects.filter(playingUser_id=self.user.id):
+                number_of_houses = self.estateNumber if self.asset.estateNumber else 0
+                card_data["pay"] = 0
+                if number_of_houses == 5:
+                    # HOTEL
+                    self.user.budget -= parameter["hotel"]
+                    card_data["pay"] += parameter["hotel"]
+                elif number_of_houses > 0:
+                    payed = parameter["house"] * number_of_houses
+                    self.user.budget -= payed
+                    card_data["pay"] += payed
+        elif card_data["action_id"] == 8:
+            # GET_MONEY_FROM_USERS
+            card_data["get"] = 0
+            for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
+                user_to_pay.budget -= parameter["get"]
+                response["get"] += parameter["get"]
+                self.card_data.budget += parameter["get"]
+        elif card_data["action_id"] == 9:
+            # GET_MONEY_FROM_BANK
+            self.user.budget += parameter["get"]
+
+        return card_data
 
 
 class LobbyView(TemplateView):
@@ -618,3 +737,4 @@ class TransactionUpdateView(APIView):
         snippet = self.get_object(pk)
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+

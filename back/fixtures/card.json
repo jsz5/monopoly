@@ -1,0 +1,136 @@
+[
+  {
+    "model": "api.card",
+    "pk": 1,
+    "fields": {
+      "description": "Wyjdz bezpłatnie z więzienia",
+      "parameter": {
+        "quantity": 2
+      },
+      "action": 6
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 2,
+    "fields": {
+      "description": "Zrobiłeś błąd w kalkulacjach podatkowych. Zapłać każdemu graczowi M 50",
+      "parameter": {
+        "pay": 50
+      },
+      "action": 4
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 3,
+    "fields": {
+      "description": "Idź na najbliższy Dworzec kolejowy. Jeśli nie jest zajęty możesz go kupić od banku,w przeciwnym wypadku zapłać właścicielowi odpowiednią sumę.",
+      "parameter": {
+        "field_type": 9
+      },
+      "action": 2
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 6,
+    "fields": {
+      "description": "Przeprowadź remont generalny wszystkich swoich nieruchomości: Zapłać za każdy dom M 250\nZapłać za każdy hotel M 1000",
+      "parameter": {
+        "house": 250,
+        "hotel": 1000
+      },
+      "action": 7
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 7,
+    "fields": {
+      "description": "Idź do Elektrowni. Jeśli nie jest zajęta możesz ją kupić od banku. Jeśli jest już zajęta rzuć kostką jeszcze raz i zapłać właścicielowi odpowiednią sumę.",
+      "parameter": {
+        "field_id": 13,
+        "dice": true
+      },
+      "action": 2
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 8,
+    "fields": {
+      "description": "Bank wypłaca Ci dywidwndę. Pobierz M 500",
+      "parameter": {
+        "get": 500
+      },
+      "action": 9
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 9,
+    "fields": {
+      "description": "Zapłać grzywne - M 150",
+      "parameter": {
+        "pay": 150
+      },
+      "action": 5
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 10,
+    "fields": {
+      "description": "Cofnij się o trzy pola.",
+      "parameter": {
+        "number": -3
+      },
+      "action": 1
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 11,
+    "fields": {
+      "description": "Masz urodziny! Pobierz M 150 od każdego gracza.",
+      "parameter": {
+        "get": 150
+      },
+      "action": 8
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 12,
+    "fields": {
+      "description": "Zająłeś 2 miejsce w konkursie piękności. Pobierz M 100",
+      "parameter": {
+        "get": 100
+      },
+      "action": 9
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 13,
+    "fields": {
+      "description": "Przejdź na START ( Pobierz M 2000)",
+      "parameter": {
+        "field_id": 1
+      },
+      "action": 2
+    }
+  },
+  {
+    "model": "api.card",
+    "pk": 14,
+    "fields": {
+      "description": "Idź na Aleje Ujazdowskie.",
+      "parameter": {
+        "field_id": 40
+      },
+      "action": 2
+    }
+  }
+]

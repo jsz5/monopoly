@@ -1,4 +1,4 @@
-from api.models import PlayingUser, Estate, Field
+from api.models import PlayingUser, Estate, Field, Card
 from rest_framework import serializers
 
 # from django.apps import apps
@@ -132,3 +132,15 @@ class FieldEstateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
         fields = ["field", "number_of_houses"]
+
+
+class CardSerializer(serializers.ModelSerializer):
+    action = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='name'
+    )
+
+    class Meta:
+        model = Card
+        fields = ["description", "parameter", "action_id", "action"]
