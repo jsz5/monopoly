@@ -267,85 +267,103 @@ class DiceRollView(ListAPIView):
         return response
 
     def __card(self):
-        response = dict()
-        # Losujemy kartę
+        self.response = dict()
         card_id = random.randint(1, Card.objects.count())
         try:
             card = Card.objects.get(id=card_id)
         except Card.DoesNotExist:
             return Response("Card does't exist", status=403)
-        card_data = CardSerializer(card).data
+        self.card_data = CardSerializer(card).data
 
-        parameter = card_data["parameter"]
-        if card_data["action_id"] == 1:
+        self.parameter = self.card_data["parameter"]
+        if self.card_data["action_id"] == 1:
             # MOVE
             # TODO: TEST
-            new_field_id = (self.field.pk + parameter["number"])
-            field_count = Field.objects.all().count()
-            if int(new_field_id) > field_count:
-                new_field_id = int(new_field_id) % field_count
-            elif int(new_field_id) <= 0:
-                new_field_id = new_field_id + field_count
-            self.user.field_id = new_field_id
-            self.field = Field.objects.get(pk=new_field_id)
-            self.user.save()
-            card_data["new_field_id"] = new_field_id
-            card_data['move'] = self.__check_field_type()
-        elif card_data["action_id"] == 2:
+            self.__move()
+        elif self.card_data["action_id"] == 2:
             # MOVE TO
-            if 'dice' in parameter:
-                self.dice = random.randint(1, 12)
-                card_data['new_dice'] = self.dice
-            if 'field_type' in parameter:
-                new_field = Field.objects.filter(
-                    Q(field_type_id=parameter['field_type']),
-                    Q(id__gt=self.field.id)
-                ).order_by('-id').first()
-
-            elif 'field_id' in parameter:
-                new_field_id = parameter['field_id']
-                self.user.field_id = new_field_id
-                self.field = Field.objects.get(pk=new_field_id)
-                card_data['move'] = self.__check_field_type()
-        elif card_data["action_id"] == 4:
+            self.__move_to()
+        elif self.card_data["action_id"] == 4:
             # PAY ALL USERS
-            for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
-                card_data["pay"] += parameter["pay"]
-                user_to_pay.budget += parameter["pay"]
-                self.user.budget -= parameter["pay"]
-                user_to_pay.save()
-        elif card_data["action_id"] == 5:
+            self.__pay_all_users()
+        elif self.card_data["action_id"] == 5:
             # PAY BANK
-            self.user.budget -= parameter["pay"]
-        elif card_data["action_id"] == 6:
+            self.user.budget -= self.parameter["pay"]
+        elif self.card_data["action_id"] == 6:
             # TODO: GET OUT OF JAIL
             pass
-        elif card_data["action_id"] == 7:
-            # PAY_FOR_ASSETS
-            for _ in Asset.objects.filter(playingUser_id=self.user.id):
-                number_of_houses = self.estateNumber if self.asset.estateNumber else 0
-                card_data["pay"] = 0
-                if number_of_houses == 5:
-                    # HOTEL
-                    self.user.budget -= parameter["hotel"]
-                    card_data["pay"] += parameter["hotel"]
-                elif number_of_houses > 0:
-                    payed = parameter["house"] * number_of_houses
-                    self.user.budget -= payed
-                    card_data["pay"] += payed
-        elif card_data["action_id"] == 8:
+        elif self.card_data["action_id"] == 7:
+            # PAY_FOR_ASSETS TODO: TEST
+            self.__pay_for_assets()
+        elif self.card_data["action_id"] == 8:
             # GET_MONEY_FROM_USERS
-            card_data["get"] = 0
-            for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
-                user_to_pay.budget -= parameter["get"]
-                response["get"] += parameter["get"]
-                self.card_data.budget += parameter["get"]
-        elif card_data["action_id"] == 9:
+            self.__get_money_from_users()
+        elif self.card_data["action_id"] == 9:
             # GET_MONEY_FROM_BANK
-            self.user.budget += parameter["get"]
+            self.user.budget += self.parameter["get"]
 
-        return card_data
+        return self.card_data
 
+    def move(self, field_id):
+        self.user.field_id = field_id
+        self.field = Field.objects.get(pk=field_id)
+
+    def __move(self):
+        new_field_id = (self.field.pk + self.parameter["number"])
+        field_count = Field.objects.all().count()
+        if int(new_field_id) > field_count:
+            new_field_id = int(new_field_id) % field_count
+        elif int(new_field_id) <= 0:
+            new_field_id = new_field_id + field_count
+        self.move(new_field_id)
+
+        self.card_data["new_field_id"] = new_field_id
+        self.card_data['move'] = self.__check_field_type()
+
+    def __move_to(self):
+        if 'dice' in self.parameter:
+            self.dice = random.randint(1, 12)
+            self.card_data['new_dice'] = self.dice
+        if 'field_type' in self.parameter:
+            new_field = Field.objects.filter(
+                Q(field_type_id=self.parameter['field_type']),
+                Q(id__gt=self.field.id)
+            ).order_by('-id').first()
+            self.move(new_field.pk)
+
+            self.card_data['move'] = self.__check_field_type()
+        elif 'field_id' in self.parameter:
+            new_field_id = self.parameter['field_id']
+            self.move(new_field_id)
+
+            self.card_data['move'] = self.__check_field_type()
+
+    def __pay_all_users(self):
+        for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
+            self.card_data["pay"] += self.parameter["pay"]
+            user_to_pay.budget += self.parameter["pay"]
+            self.user.budget -= self.parameter["pay"]
+            user_to_pay.save()
+
+    def __pay_for_assets(self):
+        for _ in Asset.objects.filter(playingUser_id=self.user.id):
+            number_of_houses = self.asset.estateNumber if self.asset else 0
+            self.card_data["pay"] = 0
+            if number_of_houses == 5:
+                # HOTEL
+                self.user.budget -= self.parameter["hotel"]
+                self.card_data["pay"] += self.parameter["hotel"]
+            elif number_of_houses > 0:
+                payed = self.parameter["house"] * number_of_houses
+                self.user.budget -= payed
+                self.card_data["pay"] += payed
+
+    def __get_money_from_users(self):
+        self.card_data["get"] = 0
+        for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
+            user_to_pay.budget -= self.parameter["get"]
+            self.response["get"] += self.parameter["get"]
+            self.card_data.budget += self.parameter["get"]
 
 class LobbyView(TemplateView):
     template_name = "lobby.html"
