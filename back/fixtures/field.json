@@ -313,7 +313,7 @@
     "model": "api.field",
     "pk": 32,
     "fields": {
-      "name": "Plac Trzech Krzyży,,
+      "name": "Plac Trzech Krzyży",
       "price": 3000,
       "field_type": 7,
       "zone": 7

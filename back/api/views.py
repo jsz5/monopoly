@@ -160,11 +160,27 @@ class DiceRollView(ListAPIView):
             else:
                 self.field = Field.objects.get(pk=int(self.user.field.pk + self.dice))
             try:
-                self.asset = Asset.objects.get(field=self.field) if not self.asset.isPledged else None
+                self.asset = Asset.objects.get(field=self.field)
+                if self.asset.isPledged:
+                    self.asset = None
             except Asset.DoesNotExist:
                 self.asset = None
 
-            self.__check_field_type()
+            self.response.update(self.__check_field_type())
+
+            if self.user.budget < 0:
+                for asset in Asset.objects.filter(playingUser=self.user):
+                    self.user.budget += asset.price + asset.estateNumber * asset.field.zone.price_per_house
+                    asset.delete()
+                    if self.user.budget > 0:
+                        break
+
+            if self.user.budget < 0:
+                self.user.isActive = False
+                return Response("Przegrana gra")
+
+            # todo prison
+            # todo saldo użytkownika dogadac
 
             self.user.field = self.field
             self.user.save()
@@ -178,23 +194,24 @@ class DiceRollView(ListAPIView):
     def __check_field_type(self):
         response = dict()
         response['name'] = self.field.name
-        if self.field.field_type == 2:
+        print(self.field.field_type)
+        if self.field.field_type_id == 2:
             # TODO: jail
             response['action'] = 'visit jail'
-        elif self.field.field_type == 3:
+        elif self.field.field_type_id == 3:
             # TODO: test
             response['action'] = 'get card'
-            response['card'] = self.__card(self.user)
-        elif self.field.field_type == 4:
+            response['card'] = self.__card()
+        elif self.field.field_type_id == 4:
             # TODO: pay albo dac w field.price cene albo ifem jak jest teraz
             to_pay = 2000 if self.field.pk == 39 else 1000
             self.user.budget -= to_pay
             response['action'] = 'pay tax'
             response['amount'] = to_pay
-        elif self.field.field_type == 5:
+        elif self.field.field_type_id == 5:
             # TODO: go to jail
             response['action'] = 'go to jail'
-        elif self.field.field_type == 7:
+        elif self.field.field_type_id == 7:
             #     normal
             # TODO: tests
             response['action'] = 'normal card'
@@ -215,7 +232,7 @@ class DiceRollView(ListAPIView):
                 response['pay'] = fee
                 response['to_who'] = self.asset.playingUser.user.username #TODO: CHECK
                 self.user.budget -= fee
-        elif self.field.field_type == 8:
+        elif self.field.field_type_id == 8:
             #     power plant
             # todo: test
             if self.asset and self.asset.playingUser != self.user:
@@ -228,7 +245,7 @@ class DiceRollView(ListAPIView):
                 self.user.budget -= fee
                 response['pay'] = fee
                 response['to_who'] = self.asset.playingUser.user.username
-        elif self.field.field_type == 9:
+        elif self.field.field_type_id == 9:
             #     transport
             # todo: test
             transport = Asset.objects.get(
@@ -247,27 +264,9 @@ class DiceRollView(ListAPIView):
             response['pay'] = fee
             response['to_who'] = self.asset.playingUser.user.username
 
-
-        if self.user.budget < 0:
-            for asset in Asset.objects.filter(playingUser=self.user):
-                self.user.budget += asset.price + asset.estateNumber * asset.field.zone.price_per_house
-                asset.delete()
-                if self.user.budget > 0:
-                    break
-
-        if self.user.budget < 0:
-            self.user.isActive = False
-            return Response("Przegrana gra")
-
-        # todo prison
-        # todo saldo użytkownika dogadac
-
-        self.user.field = self.field
-        self.user.save()
-        return response
+        return dict(response)
 
     def __card(self):
-        self.response = dict()
         card_id = random.randint(1, Card.objects.count())
         try:
             card = Card.objects.get(id=card_id)
