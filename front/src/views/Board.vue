@@ -524,10 +524,6 @@
                         this.boardConfig = msg.board;
                         this.configureBoard()
                         this.boardKey += 1
-                        this.boardKey2 += 1
-                        this.boardKey3 += 1
-                        this.boardKey4 += 1
-
                         this.fetchTransactions()
                         this.fetchUserInfo()
                         this.transaction1Key += 1
