@@ -14,9 +14,9 @@
     "model": "api.card",
     "pk": 2,
     "fields": {
-      "description": "Zrobiłeś błąd w kalkulacjach podatkowych. Zapłać każdemu graczowi M 50",
+      "description": "Zrobiłeś błąd w kalkulacjach podatkowych. Zapłać każdemu graczowi M 150",
       "parameter": {
-        "pay": 50
+        "pay": 150
       },
       "action": 4
     }
@@ -34,7 +34,7 @@
   },
   {
     "model": "api.card",
-    "pk": 7,
+    "pk": 4,
     "fields": {
       "description": "Przeprowadź remont generalny wszystkich swoich nieruchomości: Zapłać za każdy dom M 250\nZapłać za każdy hotel M 1000",
       "parameter": {
@@ -46,7 +46,7 @@
   },
   {
     "model": "api.card",
-    "pk": 7,
+    "pk": 5,
     "fields": {
       "description": "Idź do Elektrowni. Jeśli nie jest zajęta możesz ją kupić od banku. Jeśli jest już zajęta rzuć kostką jeszcze raz i zapłać właścicielowi odpowiednią sumę.",
       "parameter": {
@@ -58,29 +58,29 @@
   },
   {
     "model": "api.card",
-    "pk": 8,
+    "pk": 6,
     "fields": {
-      "description": "Bank wypłaca Ci dywidwndę. Pobierz M 500",
+      "description": "Bank wypłaca Ci dywidwndę. Pobierz M 1500",
       "parameter": {
-        "get": 500
+        "get": 1500
       },
       "action": 9
     }
   },
   {
     "model": "api.card",
-    "pk": 9,
+    "pk": 7,
     "fields": {
-      "description": "Zapłać grzywne - M 150",
+      "description": "Zapłać grzywne - M 500",
       "parameter": {
-        "pay": 150
+        "pay": 500
       },
       "action": 5
     }
   },
   {
     "model": "api.card",
-    "pk": 10,
+    "pk": 8,
     "fields": {
       "description": "Cofnij się o trzy pola.",
       "parameter": {
@@ -91,29 +91,29 @@
   },
   {
     "model": "api.card",
-    "pk": 11,
+    "pk": 9,
     "fields": {
-      "description": "Masz urodziny! Pobierz M 150 od każdego gracza.",
+      "description": "Masz urodziny! Pobierz M 300 od każdego gracza.",
       "parameter": {
-        "get": 150
+        "get": 300
       },
       "action": 8
     }
   },
   {
     "model": "api.card",
-    "pk": 12,
+    "pk": 10,
     "fields": {
-      "description": "Zająłeś 2 miejsce w konkursie piękności. Pobierz M 100",
+      "description": "Zająłeś 2 miejsce w konkursie piękności. Pobierz M 400",
       "parameter": {
-        "get": 100
+        "get": 400
       },
       "action": 9
     }
   },
   {
     "model": "api.card",
-    "pk": 13,
+    "pk": 11,
     "fields": {
       "description": "Przejdź na START ( Pobierz M 2000)",
       "parameter": {
@@ -124,7 +124,7 @@
   },
   {
     "model": "api.card",
-    "pk": 14,
+    "pk": 12,
     "fields": {
       "description": "Idź na Aleje Ujazdowskie.",
       "parameter": {
@@ -135,10 +135,12 @@
   },
    {
     "model": "api.card",
-    "pk": 15,
+    "pk": 13,
     "fields": {
       "description": "Idź do więzienia. Nie przechodź przez START. Nie pobieraj M 2000",
-      "parameter": null,
+      "parameter": {
+        "field_id": 11
+      },
       "action": 10
     }
   }

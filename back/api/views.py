@@ -183,6 +183,7 @@ class DiceRollView(ListAPIView):
     """
 
     def get(self, request, *args, **kwargs):
+        self.error = None
         self.dice = random.randint(1, 12)
         self.response = {"number": self.dice}
         try:
@@ -208,11 +209,12 @@ class DiceRollView(ListAPIView):
                 self.asset = Asset.objects.get(field=self.field)
                 if self.asset.isPledged:
                     self.asset = None
-                self.response['asset'] = AssetSerializer(self.asset).data
             except Asset.DoesNotExist:
                 self.asset = None
 
             self.response.update(self.check_field_type())
+            if self.error is not None:
+                return Response(self.error, status=403)
 
             if self.user.budget < 0:
                 for asset in Asset.objects.filter(playingUser=self.user):
@@ -241,8 +243,9 @@ class DiceRollView(ListAPIView):
             response['action'] = 'visit jail'
         elif self.field.field_type_id == 3:
             card_id = random.randint(1, Card.objects.count())
-            response['action'] = 'get card'
+            response['action'] = 'get_card'
             response['card'] = self.card(card_id)
+
         elif self.field.field_type_id == 4:
             to_pay = 2000 if self.field.pk == 39 else 1000
             self.user.budget -= to_pay
@@ -256,61 +259,80 @@ class DiceRollView(ListAPIView):
         elif self.field.field_type_id == 7:
             # normal
             response['action'] = 'normal card'
-            if self.asset and self.asset.playingUser != self.user:
-                estate = Estate.objects.get(field=self.field)
-                if self.asset.estateNumber == 0:
-                    fee = estate.fee_zero_houses
-                elif self.asset.estateNumber == 1:
-                    fee = estate.fee_one_house
-                elif self.asset.estateNumber == 2:
-                    fee = estate.fee_two_houses
-                elif self.asset.estateNumber == 3:
-                    fee = estate.fee_three_houses
-                elif self.asset.estateNumber == 4:
-                    fee = estate.fee_four_houses
-                elif self.asset.estateNumber == 5:
-                    fee = estate.fee_five_houses
-                response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username
-                self.user.budget -= fee
+            if self.asset:
+                if self.asset.playingUser != self.user:
+                    estate = Estate.objects.get(field=self.field)
+                    if self.asset.estateNumber == 0:
+                        fee = estate.fee_zero_houses
+                    elif self.asset.estateNumber == 1:
+                        fee = estate.fee_one_house
+                    elif self.asset.estateNumber == 2:
+                        fee = estate.fee_two_houses
+                    elif self.asset.estateNumber == 3:
+                        fee = estate.fee_three_houses
+                    elif self.asset.estateNumber == 4:
+                        fee = estate.fee_four_houses
+                    elif self.asset.estateNumber == 5:
+                        fee = estate.fee_five_houses
+                    response['pay'] = fee
+                    response['to_who'] = self.asset.playingUser.user.username
+                    self.user.budget -= fee
+                else:
+                    response['my'] = True
+            else:
+                response['price'] = self.field.price
         elif self.field.field_type_id == 8:
             # power plant
-            if self.asset and self.asset.playingUser != self.user:
-                # if player has one power plant
-                power_plants = Asset.objects.get(
-                    Q(field__in=Field.objects.filter(field_type=8)),
-                    Q(playingUser_id=self.asset.playingUser)
-                )
-                fee = self.dice * 400 if len(power_plants) == 1 else self.dice * 1000
-                self.user.budget -= fee
-                response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username
+            response['action'] = 'power_plant'
+            if self.asset:
+                if self.asset.playingUser != self.user:
+                    # if player has one power plant
+                    power_plants_number = Asset.objects.filter(
+                        Q(field__in=Field.objects.filter(field_type=8)),
+                        Q(playingUser_id=self.asset.playingUser)
+                    ).count()
+                    fee = self.dice * 400 if power_plants_number == 1 else self.dice * 1000
+                    self.user.budget -= fee
+                    response['pay'] = fee
+                    response['to_who'] = self.asset.playingUser.user.username
+                else:
+                    response['my'] = True
+            else:
+                response['price'] = self.field.price
         elif self.field.field_type_id == 9:
             response['action'] = 'transport'
-            if self.asset and self.asset.playingUser != self.user:
-                transport = Asset.objects.get(
-                    Q(field__in=Field.objects.filter(field_type=9)),
-                    Q(playingUser_id=self.asset.playingUser)
-                )
-                if len(transport) == 1:
-                    fee = 250
-                elif len(transport) == 2:
-                    fee = 500
-                elif len(transport) == 3:
-                    fee = 1000
-                elif len(transport) == 4:
-                    fee = 2000
-                self.user.budget -= fee
-                response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username
+            if self.asset:
+                if self.asset.playingUser != self.user:
+                    transport_number = Asset.objects.filter(
+                        Q(field__in=Field.objects.filter(field_type=9)),
+                        Q(playingUser_id=self.asset.playingUser)
+                    ).count()
+                    if transport_number == 1:
+                        fee = 250
+                    elif transport_number == 2:
+                        fee = 500
+                    elif transport_number == 3:
+                        fee = 1000
+                    elif transport_number == 4:
+                        fee = 2000
+                    self.user.budget -= fee
+                    response['pay'] = fee
+                    response['to_who'] = self.asset.playingUser.user.username
+                else:
+                    response['my'] = True
+            else:
+                response['price'] = self.field.price
 
         return dict(response)
 
     def card(self, card_id):
+        print("Card")
+        print(card_id)
         try:
             card = Card.objects.get(pk=card_id)
+            print(card)
         except Card.DoesNotExist:
-            return Response("Card does't exist", status=403)
+            self.error = "Card does't exist"
         self.card_data = CardSerializer(card).data
 
         self.parameter = self.card_data["parameter"]
