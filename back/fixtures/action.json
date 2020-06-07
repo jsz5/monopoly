@@ -66,7 +66,7 @@
     "model": "api.action",
     "pk": 10,
     "fields": {
-      "name": "MOVE_TO_AND_GET_MONEY_IF_START"
+      "name": "GO_TO_JAIL"
     }
   }
 ]

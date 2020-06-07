@@ -34,7 +34,7 @@
   },
   {
     "model": "api.card",
-    "pk": 6,
+    "pk": 7,
     "fields": {
       "description": "Przeprowadź remont generalny wszystkich swoich nieruchomości: Zapłać za każdy dom M 250\nZapłać za każdy hotel M 1000",
       "parameter": {
@@ -131,6 +131,15 @@
         "field_id": 40
       },
       "action": 2
+    }
+  },
+   {
+    "model": "api.card",
+    "pk": 15,
+    "fields": {
+      "description": "Idź do więzienia. Nie przechodź przez START. Nie pobieraj M 2000",
+      "parameter": null,
+      "action": 11
     }
   }
 ]

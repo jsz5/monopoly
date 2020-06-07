@@ -99,5 +99,29 @@ class CardThreeForTwoUsersTestCase(TestCase):
 # class
 
 # class PowerPlantTestCase(TestCase):
+#     fixtures = [
+#         "fixtures/users.json",
+#         "fixtures/action.json",
+#         "fixtures/fieldtype.json",
+#         "fixtures/zone.json",
+#         "fixtures/field.json",
+#         "fixtures/estate.json",
+#         "fixtures/card.json",
+#     ]
+#
+#     def setUp(self):
+#         user = User.objects.get(pk=1)
+#         user2 = User.objects.get(pk=2)
+#         playing_user = PlayingUser(isActive=True, isPlaying=True, budget=6000, user=user)
+#         playing_user.save()
+#         playing_user1 = PlayingUser(isActive=True, isPlaying=False, budget=6000, user=user2)
+#         playing_user1.save()
+#         self.dice_roll_view = DiceRollView()
+#         self.dice_roll_view.user = playing_user
+#         self.dice_roll_view.response = dict()
+#         self.dice_roll_view.field = Field.objects.get(pk=3)
+#         self.dice_roll_view.dice = 1
+#         self.dice_roll_view.asset = None
+
 
 # class NormalTestCase(TestCase):

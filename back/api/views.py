@@ -255,7 +255,6 @@ class DiceRollView(ListAPIView):
             response['action'] = 'go to jail'
         elif self.field.field_type_id == 7:
             # normal
-            # TODO: tests
             response['action'] = 'normal card'
             if self.asset and self.asset.playingUser != self.user:
                 estate = Estate.objects.get(field=self.field)
@@ -272,11 +271,10 @@ class DiceRollView(ListAPIView):
                 elif self.asset.estateNumber == 5:
                     fee = estate.fee_five_houses
                 response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username #TODO: CHECK
+                response['to_who'] = self.asset.playingUser.user.username
                 self.user.budget -= fee
         elif self.field.field_type_id == 8:
             # power plant
-            # todo: test
             if self.asset and self.asset.playingUser != self.user:
                 # if player has one power plant
                 power_plants = Asset.objects.get(
@@ -288,8 +286,6 @@ class DiceRollView(ListAPIView):
                 response['pay'] = fee
                 response['to_who'] = self.asset.playingUser.user.username
         elif self.field.field_type_id == 9:
-            #     transport
-            # todo: test
             response['action'] = 'transport'
             if self.asset and self.asset.playingUser != self.user:
                 transport = Asset.objects.get(
@@ -321,7 +317,6 @@ class DiceRollView(ListAPIView):
         print(self.card_data["action_id"])
         if self.card_data["action_id"] == 1:
             # MOVE
-            # TODO: TEST
             self.__move()
         elif self.card_data["action_id"] == 2:
             # MOVE TO
@@ -333,11 +328,10 @@ class DiceRollView(ListAPIView):
             # PAY BANK
             self.user.budget -= self.parameter["pay"]
         elif self.card_data["action_id"] == 6:
-            # TODO: GET OUT OF JAIL
+            # GET OUT OF JAIL CARD
             self.user.get_out_of_jail_card += 1
-            pass
         elif self.card_data["action_id"] == 7:
-            # PAY_FOR_ASSETS TODO: TEST
+            # PAY_FOR_ASSETS
             self.__pay_for_assets()
         elif self.card_data["action_id"] == 8:
             # GET_MONEY_FROM_USERS
@@ -345,6 +339,10 @@ class DiceRollView(ListAPIView):
         elif self.card_data["action_id"] == 9:
             # GET_MONEY_FROM_BANK
             self.user.budget += self.parameter["get"]
+        elif self.card_data["action_id"] == 10:
+            # GO TO JAIL
+            self.user.prison = {"queue": 2, "checked": True}
+            self.move(11)
 
         return dict(self.card_data)
 
