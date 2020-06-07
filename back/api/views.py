@@ -240,6 +240,7 @@ class DiceRollView(ListAPIView):
             response['amount'] = to_pay
         elif self.field.field_type_id == 5:
             self.user.prison = {"queue": 2, "checked": True}
+            self.move(11)
             self.user.save()
             response['action'] = 'go to jail'
         elif self.field.field_type_id == 7:
