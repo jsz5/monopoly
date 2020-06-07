@@ -160,6 +160,8 @@ class BoardConsumer(WebsocketConsumer):
         playing_user = PlayingUser.objects.filter(isPlaying=True).first()
         next_place = playing_user.place % (PlayingUser.objects.count()) + 1
         print(f"Now should play {next_place}")
+        if playing_user.prison and playing_user.prison["queue"] == 0:
+            playing_user.prison = None
         playing_user.isPlaying = False
         playing_user.save()
         new_playing_user = PlayingUser.objects.get(place=next_place)
@@ -210,4 +212,3 @@ class BoardConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name, {"type": "update_message", "board": self.__get_board()}
         )
-

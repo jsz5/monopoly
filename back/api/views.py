@@ -115,17 +115,20 @@ class PlayingUserListView(ListAPIView):
 
 class AuthUserView(APIView):
     def get(self, request, *args, **kwargs):
-        auth_playing = PlayingUser.objects.get(user=request.user)
-        current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
-        return Response(
-            {
-                "username": request.user.username,
-                "budget": auth_playing.budget,
-                "field": auth_playing.field_id,
-                "turn": auth_playing.isPlaying,
-                "turn_user": User.objects.get(id=current_playing_id).username
-            }
-        )
+        try:
+            auth_playing = PlayingUser.objects.get(user=request.user)
+            current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
+            return Response(
+                {
+                    "username": request.user.username,
+                    "budget": auth_playing.budget,
+                    "field": auth_playing.field_id,
+                    "turn": auth_playing.isPlaying,
+                    "turn_user": User.objects.get(id=current_playing_id).username
+                }
+            )
+        except Exception:
+            return Response("Wystąpił błąd", status=500)
 
 
 class CurrentPlayer(APIView):
@@ -152,7 +155,15 @@ class DiceRollView(ListAPIView):
             self.user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
             return Response("Nieprawidłowy użytkownik", status=403)
+        if self.user.prison and self.user.prison["checked"]:
+            return Response("Użytkownik nie ma prawa ruchu", status=403)
+
         if self.user.isActive and self.user.isPlaying:
+            if self.user.prison:
+                prison = self.user.prison["queue"] - 1
+                self.user.prison = {"checked": True, "queue": prison}
+                self.user.save()
+                return Response(f"Jesteś w więzieniu. Zostało kolejek {prison}")
             field_count = Field.objects.all().count()
             if int(self.user.field.pk) + self.dice > field_count:
                 self.user.budget += 2000
@@ -230,7 +241,7 @@ class DiceRollView(ListAPIView):
                 elif self.estateNumber == 5:
                     fee = estate.fee_five_houses
                 response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username #TODO: CHECK
+                response['to_who'] = self.asset.playingUser.user.username  # TODO: CHECK
                 self.user.budget -= fee
         elif self.field.field_type_id == 8:
             #     power plant
@@ -363,6 +374,7 @@ class DiceRollView(ListAPIView):
             user_to_pay.budget -= self.parameter["get"]
             self.response["get"] += self.parameter["get"]
             self.card_data.budget += self.parameter["get"]
+
 
 class LobbyView(TemplateView):
     template_name = "lobby.html"
@@ -616,8 +628,8 @@ class BuyEstateFieldView(CreateAPIView):
                     return Response("Obecne pole jest zastawione", status=403)
                 number_of_houses = validated_data["number_of_houses"]
                 if (
-                    number_of_houses not in range(1, 6)
-                    or asset.estateNumber + number_of_houses > 5
+                        number_of_houses not in range(1, 6)
+                        or asset.estateNumber + number_of_houses > 5
                 ):
                     return Response("Błędna ilość domków", status=403)
                 if user.budget < field.zone.price_per_house * number_of_houses:
@@ -664,8 +676,8 @@ class SellEstateFieldView(CreateAPIView):
                     return Response("Obecne pole jest zastawione", status=403)
                 number_of_houses = validated_data["number_of_houses"]
                 if (
-                    number_of_houses not in range(1, 6)
-                    or asset.estateNumber - number_of_houses < 0
+                        number_of_houses not in range(1, 6)
+                        or asset.estateNumber - number_of_houses < 0
                 ):
                     return Response("Błędna ilość domków", status=403)
 
@@ -722,11 +734,11 @@ class TransactionUpdateView(APIView):
             buyer = PlayingUser.objects.filter(user=transaction.buyer).first()
             seller = PlayingUser.objects.filter(user=transaction.seller).first()
             if (
-                Asset.objects.filter(
-                    playingUser=seller, field=transaction.field
-                ).count()
-                == 0
-                or transaction.price > buyer.budget
+                    Asset.objects.filter(
+                        playingUser=seller, field=transaction.field
+                    ).count()
+                    == 0
+                    or transaction.price > buyer.budget
             ):
                 print(
                     Asset.objects.filter(
@@ -754,4 +766,3 @@ class TransactionUpdateView(APIView):
         snippet = self.get_object(pk)
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
