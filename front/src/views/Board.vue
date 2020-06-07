@@ -3,332 +3,369 @@
         <div :key="budgetKey">Zalogowany jako {{myUsername}}. <br> Budżet: {{budget}} <br> Stoisz na polu
             {{currentField}}.
         </div>
-        <div class="first_part_board">
-            <v-sheet
-                    :width="field.width"
-                    :height="field.height"
-                    v-for="(field, index) in firstQuarterConfig"
-                    :key="index"
-                    :color="field.color"
-                    class="first_quarter_fields"
-            >
+        <v-container>
+            <v-col>
+                <v-row>
+
+                    <div class="first_part_board">
+                        <v-sheet
+                                :width="field.width"
+                                :height="field.height"
+                                v-for="(field, index) in firstQuarterConfig"
+                                :key="index"
+                                :color="field.color"
+                                class="first_quarter_fields"
+                        >
                                        <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                <span v-if="field.price != null">{{field.price}}$
+                            <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
                 </span><br>
-                <span v-if="field.type=='START'"><b>START</b></span>
-                <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
-                </v-icon >
-<!--                <div v-if="field.users.length  > 0">-->
-                    <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                </v-icon>
-<!--                </div>-->
+                            <span v-if="field.type=='START'"><b>START</b></span>
+                            <v-icon small v-for="(id, house) in field.houses"
+                                    :key="id.toString() + house.toString()">
+                                mdi-home
+                            </v-icon>
+                            <!--                <div v-if="field.users.length  > 0">-->
+                            <v-icon small v-for="user in field.users" :key="user.toString()">
+                                mdi-numeric-{{user}}-box-outline
+                            </v-icon>
+                            <!--                </div>-->
 
-                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
-                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
-                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-            </v-sheet>
-        </div>
-        <div class="middle_part">
-            <div class="second_part_board">
-                <v-sheet
-                        :width="field.width"
-                        :height="field.height"
-                        v-for="(field, index) in secondQuarterConfig"
-                        :key="index"
-                        :color="field.color"
-                        class="second_quarter_fields"
-                >
+                            <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                            <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
+                            <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                            <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                        </v-sheet>
+                    </div>
+                    <div class="middle_part">
+                        <div class="second_part_board">
+                            <v-sheet
+                                    :width="field.width"
+                                    :height="field.height"
+                                    v-for="(field, index) in secondQuarterConfig"
+                                    :key="index"
+                                    :color="field.color"
+                                    class="second_quarter_fields"
+                            >
                             <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                    <span v-if="field.price != null">{{field.price}}$
+                                <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
                 </span><br>
-                    <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
-                    </v-icon>
-                    <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                    </v-icon>
-                    <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                    <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
-                    <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                    <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
-                </v-sheet>
-            </div>
-            <v-container class="inside_part">
-                <v-container class="dice">
-                    <h2>{{dice}}</h2>
-                </v-container>
-                <v-container class="turn">
-                    <h2>{{turn}}</h2>
-                </v-container>
-                <v-container v-show="visible_houses" class="house-buy">
-                    <h2> Kupno domków</h2>
-                    <v-container class="buy_houses_buttons">
-                        <v-col sm="4" md="2">
-                          <v-text-field
-                            label="ID pola"
-                            outlined
-                            v-model="house_id"
-                          ></v-text-field>
-                        </v-col>
-                        <v-col sm="4" md="2">
-                          <v-text-field
-                            label="ilość domków"
-                            outlined
-                            v-model="house_quantity"
-                          ></v-text-field>
-                        </v-col>
-                        <v-card-actions>
-                            <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
-                        </v-card-actions>
-                    </v-container>
-                </v-container>
-                <v-container class="turn_buttons">
-                    <v-card-actions class="dice-button">
-                        <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
-                    </v-card-actions>
+                                <v-icon small v-for="(id, house) in field.houses"
+                                        :key="id.toString() + house.toString()">
+                                    mdi-home
+                                </v-icon>
+                                <v-icon small v-for="user in field.users" :key="user.toString()">
+                                    mdi-numeric-{{user}}-box-outline
+                                </v-icon>
+                                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                                <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                            </v-sheet>
+                        </div>
+                        <v-container class="inside_part">
+                            <v-container class="dice">
+                                <h2>{{dice}}</h2>
+                            </v-container>
+                            <v-container class="turn">
+                                <h2>{{turn}}</h2>
+                            </v-container>
+                            <v-container v-show="visible_houses" class="house-buy">
+                                <h2> Kupno domków</h2>
+                                <v-container class="buy_houses_buttons">
+                                    <v-col sm="4" md="2">
+                                        <v-text-field
+                                                label="ID pola"
+                                                outlined
+                                                v-model="house_id"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col sm="4" md="2">
+                                        <v-text-field
+                                                label="ilość domków"
+                                                outlined
+                                                v-model="house_quantity"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-card-actions>
+                                        <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
+                                    </v-card-actions>
+                                </v-container>
+                            </v-container>
+                            <v-container class="turn_buttons">
+                                <v-card-actions class="dice-button">
+                                    <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+                                </v-card-actions>
 
-                    <v-card-actions>
-                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
-                    </v-card-actions>
-                </v-container>
-            </v-container>
-            <div class="fourth_part_board">
-                <v-sheet
-                        :width="field.width"
-                        :height="field.height"
-                        v-for="(field, index) in fourthQuarterConfig"
-                        :key="index"
-                        :color="field.color"
-                        class="fourth_quarter_fields"
-                >
+                                <v-card-actions>
+                                    <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
+                                </v-card-actions>
+                            </v-container>
+                        </v-container>
+                        <div class="fourth_part_board">
+                            <v-sheet
+                                    :width="field.width"
+                                    :height="field.height"
+                                    v-for="(field, index) in fourthQuarterConfig"
+                                    :key="index"
+                                    :color="field.color"
+                                    class="fourth_quarter_fields"
+                            >
                                    <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                    <span v-if="field.price != null">{{field.price}}$
+                                <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
 
                 </span><br>
-                    <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
-                    </v-icon>
-                    <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                    </v-icon>
-                    <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                    <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                    <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
-                    <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
-                </v-sheet>
-            </div>
-        </div>
+                                <v-icon small v-for="(id, house) in field.houses"
+                                        :key="id.toString() + house.toString()">
+                                    mdi-home
+                                </v-icon>
+                                <v-icon small v-for="user in field.users" :key="user.toString()">
+                                    mdi-numeric-{{user}}-box-outline
+                                </v-icon>
+                                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                                <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                            </v-sheet>
+                        </div>
+                    </div>
 
-        <div class="third_part_board">
-            <v-sheet
-                    :width="field.width"
-                    :height="field.height"
-                    v-for="(field, index) in thirdQuarterConfig"
-                    :key="index"
-                    :color="field.color"
-                    class="third_quarter_fields"
-            >
+                    <div class="third_part_board">
+                        <v-sheet
+                                :width="field.width"
+                                :height="field.height"
+                                v-for="(field, index) in thirdQuarterConfig"
+                                :key="index"
+                                :color="field.color"
+                                class="third_quarter_fields"
+                        >
                                        <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                <span v-if="field.price != null">{{field.price}}$
+                            <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
                 </span><br>
-                <v-icon small v-for="(id, house) in field.houses" :key="id.toString() + house.toString()">mdi-home
-                </v-icon>
-                <v-icon small v-for="user in field.users" :key="user.toString()">mdi-numeric-{{user}}-box-outline
-                </v-icon>
-                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
-                <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-handcuffs</v-icon>
-                <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-hand-pointing-up</v-icon>
-                <v-icon x-large v-if="field.type=='EMPTY'">mdi-power-plug</v-icon>
-                <v-icon x-large v-if="field.type=='EMPTY'">mdi-car</v-icon>
-            </v-sheet>
-        </div>
-        <div >
-            <v-card
-                    class="mx-auto"
-                    max-width="200"
-                    tile
-                    :key="transaction1Key"
-            >
-                <v-list
-                >
-                    <v-subheader>Wysłane</v-subheader>
-                    <v-list-item-group color="primary">
-                        <v-list-item
-                                v-for="(item, i) in sendByAuth"
-                                :key="i"
+                            <v-icon small v-for="(id, house) in field.houses"
+                                    :key="id.toString() + house.toString()">
+                                mdi-home
+                            </v-icon>
+                            <v-icon small v-for="user in field.users" :key="user.toString()">
+                                mdi-numeric-{{user}}-box-outline
+                            </v-icon>
+                            <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                            <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                            <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                            <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-handcuffs</v-icon>
+                            <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-hand-pointing-up</v-icon>
+                            <v-icon x-large v-if="field.type=='EMPTY'">mdi-power-plug</v-icon>
+                            <v-icon x-large v-if="field.type=='EMPTY'">mdi-car</v-icon>
+                        </v-sheet>
+                    </div>
+                    
+                </v-row>
+
+                <v-row>
+
+                    <v-col>
+                        <v-card
+                                class="mx-auto"
+                                max-width="200"
+                                tile
+                                :key="transaction1Key"
                         >
+                            <v-list
+                            >
+                                <v-subheader>Wysłane</v-subheader>
+                                <v-list-item-group color="primary">
+                                    <v-list-item
+                                            v-for="(item, i) in sendByAuth"
+                                            :key="i"
+                                    >
 
-                            <v-list-item-content>
-                                <v-list-item-title>
-                                    <v-text-field
-                                            label="Pole"
-                                            :value=item.field_id
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Cena"
-                                            :value=item.price
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Sprzedaje"
-                                            :value=item.seller.username
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Kupuje"
-                                            :value=item.buyer.username
-                                    ></v-text-field>
-                                    <v-text-field v-if="!item.finished"
-                                                  label="Status"
-                                                  value="Aktywna"
-                                    ></v-text-field>
-                                    <v-text-field v-else
-                                                  label="Status"
-                                                  value="Zakończona"
-                                    ></v-text-field>
-                                    <div class="text-center" v-if="!item.finished">
-                                        <v-btn small outlined color="indigo" @click="cancelTransaction(item.id)">Anuluj
-                                        </v-btn>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                <v-text-field
+                                                        label="Pole"
+                                                        :value=item.field_id
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Cena"
+                                                        :value=item.price
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Sprzedaje"
+                                                        :value=item.seller.username
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Kupuje"
+                                                        :value=item.buyer.username
+                                                ></v-text-field>
+                                                <v-text-field v-if="!item.finished"
+                                                              label="Status"
+                                                              value="Aktywna"
+                                                ></v-text-field>
+                                                <v-text-field v-else
+                                                              label="Status"
+                                                              value="Zakończona"
+                                                ></v-text-field>
+                                                <div class="text-center" v-if="!item.finished">
+                                                    <v-btn small outlined color="indigo"
+                                                           @click="cancelTransaction(item.id)">
+                                                        Anuluj
+                                                    </v-btn>
 
 
-                                    </div>
-                                </v-list-item-title>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list-item-group>
-                </v-list>
-            </v-card>
-            <v-card
-                    class="mx-auto"
-                    max-width="200"
-                    tile
+                                                </div>
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list-item-group>
+                            </v-list>
+                        </v-card>
+                    </v-col>
+                    <v-col>
+                        <v-card
+                                class="mx-auto"
+                                max-width="200"
+                                tile
 
-            >
-                <v-list  :key="transaction2Key"
-                >
-                    <v-subheader>Otrzymane</v-subheader>
-                    <v-list-item-group color="primary">
-                        <v-list-item
-                                v-for="(item, i) in sendByOthers"
-                                :key="i"
                         >
+                            <v-list :key="transaction2Key"
+                            >
+                                <v-subheader>Otrzymane</v-subheader>
+                                <v-list-item-group color="primary">
+                                    <v-list-item
+                                            v-for="(item, i) in sendByOthers"
+                                            :key="i"
+                                    >
 
-                            <v-list-item-content>
-                                <v-list-item-title>
-                                    <v-text-field
-                                            label="Pole"
-                                            :value=item.field_id
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Cena"
-                                            :value=item.price
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Sprzedaje"
-                                            :value=item.seller.username
-                                    ></v-text-field>
-                                    <v-text-field
-                                            label="Kupuje"
-                                            :value=item.buyer.username
-                                    ></v-text-field>
-                                    <v-text-field v-if="!item.finished"
-                                                  label="Status"
-                                                  value="Aktywna"
-                                    ></v-text-field>
-                                    <v-text-field v-else
-                                                  label="Status"
-                                                  value="Zakończona"
-                                    ></v-text-field>
-                                    <div class="text-center" v-if="!item.finished">
-                                        <v-btn small outlined color="indigo" @click="acceptTransaction(item.id)">
-                                            Akceptuj
-                                        </v-btn>
-                                        <v-btn small outlined color="indigo" @click="cancelTransaction(item.id)">Odrzuć
-                                        </v-btn>
-                                    </div>
-                                </v-list-item-title>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list-item-group>
-                </v-list>
-            </v-card>
-        </div>
-        <v-card
-                class="mx-auto"
-                max-width="200"
-                tile
-        >
-            <v-list
-            >
-                <v-subheader>Nowa transakcja</v-subheader>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                <v-text-field
+                                                        label="Pole"
+                                                        :value=item.field_id
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Cena"
+                                                        :value=item.price
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Sprzedaje"
+                                                        :value=item.seller.username
+                                                ></v-text-field>
+                                                <v-text-field
+                                                        label="Kupuje"
+                                                        :value=item.buyer.username
+                                                ></v-text-field>
+                                                <v-text-field v-if="!item.finished"
+                                                              label="Status"
+                                                              value="Aktywna"
+                                                ></v-text-field>
+                                                <v-text-field v-else
+                                                              label="Status"
+                                                              value="Zakończona"
+                                                ></v-text-field>
+                                                <div class="text-center" v-if="!item.finished">
+                                                    <v-btn small outlined color="indigo"
+                                                           @click="acceptTransaction(item.id)">
+                                                        Akceptuj
+                                                    </v-btn>
+                                                    <v-btn small outlined color="indigo"
+                                                           @click="cancelTransaction(item.id)">
+                                                        Odrzuć
+                                                    </v-btn>
+                                                </div>
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list-item-group>
+                            </v-list>
+                        </v-card>
+                    </v-col>
+                    <v-col>
+                        <v-card
+                                class="mx-auto"
+                                max-width="200"
+                                tile
+                        >
+                            <v-list
+                            >
+                                <v-subheader>Nowa transakcja</v-subheader>
 
-                <v-list-item
-                >
+                                <v-list-item
+                                >
 
-                    <v-list-item-content>
-                        <v-list-item-title>
-                            <v-text-field
-                                    v-model="transaction.field"
-                                    label="field"
-                                    :value=transaction.field
-                            ></v-text-field>
-                            <v-text-field
-                                    v-model="transaction.price"
-                                    label="price"
-                                    :value=transaction.price
-                            ></v-text-field>
-                            <v-text-field
-                                    v-model="transaction.isBuyingOffer"
-                                    label="isBuyingOffer"
-                                    :value=transaction.isBuyingOffer
-                            ></v-text-field>
-                            <v-select
-                                    v-if="transaction.isBuyingOffer!=='true'"
-                                    v-model="transaction.buyer"
-                                    :items="playingUsers"
-                                    label="buyer"
-                                    item-text="user"
-                                    item-value="user_id"
-                            ></v-select>
-                            <v-select
-                                     v-if="transaction.isBuyingOffer!=='false'"
-                                    v-model="transaction.seller"
-                                    :items="playingUsers"
-                                    label="seller"
-                                    item-text="user"
-                                    item-value="user_id"
-                            ></v-select>
+                                    <v-list-item-content>
+                                        <v-list-item-title>
+                                            <v-text-field
+                                                    v-model="transaction.field"
+                                                    label="field"
+                                                    :value=transaction.field
+                                            ></v-text-field>
+                                            <v-text-field
+                                                    v-model="transaction.price"
+                                                    label="price"
+                                                    :value=transaction.price
+                                            ></v-text-field>
+                                            <v-text-field
+                                                    v-model="transaction.isBuyingOffer"
+                                                    label="isBuyingOffer"
+                                                    :value=transaction.isBuyingOffer
+                                            ></v-text-field>
+                                            <v-select
+                                                    v-if="transaction.isBuyingOffer!=='true'"
+                                                    v-model="transaction.buyer"
+                                                    :items="playingUsers"
+                                                    label="buyer"
+                                                    item-text="user"
+                                                    item-value="user_id"
+                                            ></v-select>
+                                            <v-select
+                                                    v-if="transaction.isBuyingOffer!=='false'"
+                                                    v-model="transaction.seller"
+                                                    :items="playingUsers"
+                                                    label="seller"
+                                                    item-text="user"
+                                                    item-value="user_id"
+                                            ></v-select>
 
 
-                            <div class="text-center">
-                                <v-btn small outlined color="indigo" @click="newTransaction()">Wyślij
-                                </v-btn>
+                                            <div class="text-center">
+                                                <v-btn small outlined color="indigo" @click="newTransaction()">
+                                                    Wyślij
+                                                </v-btn>
 
-                            </div>
-                        </v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
+                                            </div>
+                                        </v-list-item-title>
+                                    </v-list-item-content>
+                                </v-list-item>
 
-            </v-list>
-        </v-card>
+                            </v-list>
+                        </v-card>
+                    </v-col>
+                </v-row>
+
+
+            </v-col>
+        </v-container>
     </div>
+
 </template>
 
 <script>
@@ -487,18 +524,18 @@
             },
             async n() {
                 await axiosSessionBoard.get(baseUrl + '/api/board/')
-                            .then(response => {
-                                console.log("GET BOARD")
-                                console.log(response)
-                                var board = JSON.parse(JSON.stringify(response.data))
-                                // this.boardConfig = null
-                                // this.attachBoard(response.data)
-                                this.boardConfig = board
-                            })
-                            .catch(error => {
-                                console.log("ERROR")
-                                console.log(error.response);
-                            });
+                    .then(response => {
+                        console.log("GET BOARD")
+                        console.log(response)
+                        var board = JSON.parse(JSON.stringify(response.data))
+                        // this.boardConfig = null
+                        // this.attachBoard(response.data)
+                        this.boardConfig = board
+                    })
+                    .catch(error => {
+                        console.log("ERROR")
+                        console.log(error.response);
+                    });
             },
             onMessageTransaction(event) {
                 let msg = JSON.parse(event.data);
@@ -508,8 +545,8 @@
                     case "refresh":
                         this.fetchTransactions()
                         this.fetchUsername()
-                        this.transactionKey+=1
-                        this.budgetKey+=1
+                        this.transactionKey += 1
+                        this.budgetKey += 1
                         break;
                 }
             },
@@ -614,7 +651,7 @@
                 console.log("ATTACHING BOARD")
                 this.boardConfig = board;
 
-                for(var key in board) {
+                for (var key in board) {
                     var arr = [];
                     if (board[key].users != null) {
                         var users = board[key].users;
@@ -664,85 +701,85 @@
             },
             configureBoard() {
                 Object.entries(this.boardConfig).map((item, index) => {
-                            if (
-                                item[1].type === "GO_TO_JAIL" ||
-                                item[1].type === "EMPTY" ||
-                                item[1].type === "JAIL" ||
-                                item[1].type === "START"
-                            ) {
-                                item[1].width = 120;
-                                item[1].height = 120;
-                                item[1].special_field = true;
-                            } else {
-                                item[1].special_field = false;
-                            }
+                    if (
+                        item[1].type === "GO_TO_JAIL" ||
+                        item[1].type === "EMPTY" ||
+                        item[1].type === "JAIL" ||
+                        item[1].type === "START"
+                    ) {
+                        item[1].width = 120;
+                        item[1].height = 120;
+                        item[1].special_field = true;
+                    } else {
+                        item[1].special_field = false;
+                    }
 
-                            switch (item[1].zone) {
-                                case 1:
-                                    item[1].color = this.fieldColors[0];
-                                    break;
-                                case 2:
-                                    item[1].color = this.fieldColors[1];
-                                    break;
-                                case 3:
-                                    item[1].color = this.fieldColors[2];
-                                    break;
-                                case 4:
-                                    item[1].color = this.fieldColors[3];
-                                    break;
-                                case 5:
-                                    item[1].color = this.fieldColors[4];
-                                    break;
-                                case 6:
-                                    item[1].color = this.fieldColors[5];
-                                    break;
-                                case 7:
-                                    item[1].color = this.fieldColors[6];
-                                    break;
-                                case 8:
-                                    item[1].color = this.fieldColors[7];
-                                    break;
-                                default:
-                                    item[1].color = "grey lighten-4";
-                            }
+                    switch (item[1].zone) {
+                        case 1:
+                            item[1].color = this.fieldColors[0];
+                            break;
+                        case 2:
+                            item[1].color = this.fieldColors[1];
+                            break;
+                        case 3:
+                            item[1].color = this.fieldColors[2];
+                            break;
+                        case 4:
+                            item[1].color = this.fieldColors[3];
+                            break;
+                        case 5:
+                            item[1].color = this.fieldColors[4];
+                            break;
+                        case 6:
+                            item[1].color = this.fieldColors[5];
+                            break;
+                        case 7:
+                            item[1].color = this.fieldColors[6];
+                            break;
+                        case 8:
+                            item[1].color = this.fieldColors[7];
+                            break;
+                        default:
+                            item[1].color = "grey lighten-4";
+                    }
 
-                            if (item[1].isPledged) {
-                                item[1].color = "grey darken-1";
-                            }
+                    if (item[1].isPledged) {
+                        item[1].color = "grey darken-1";
+                    }
 
-                            if (index < 11) {
-                                if (!item[1].special_field) {
-                                    item[1].width = 120;
-                                    item[1].height = 60;
-                                }
+                    if (index < 11) {
+                        if (!item[1].special_field) {
+                            item[1].width = 120;
+                            item[1].height = 60;
+                        }
 
-                                this.firstQuarterConfig.push(item[1]);
-                            } else if (index >= 11 && index <= 19) {
-                                if (!item[1].special_field) {
-                                    item[1].width = 60;
-                                    item[1].height = 120;
-                                }
-                                this.secondQuarterConfig.push(item[1]);
-                            } else if (index > 19 && index <= 30) {
-                                if (!item[1].special_field) {
-                                    item[1].width = 120;
-                                    item[1].height = 60;
-                                }
-                                this.thirdQuarterConfig.push(item[1]);
-                            } else {
-                                if (!item[1].special_field) {
-                                    item[1].width = 60;
-                                    item[1].height = 120;
-                                }
-                                this.fourthQuarterConfig.push(item[1]);
-                            }
-                        });
+                        this.firstQuarterConfig.push(item[1]);
+                    } else if (index >= 11 && index <= 19) {
+                        if (!item[1].special_field) {
+                            item[1].width = 60;
+                            item[1].height = 120;
+                        }
+                        this.secondQuarterConfig.push(item[1]);
+                    } else if (index > 19 && index <= 30) {
+                        if (!item[1].special_field) {
+                            item[1].width = 120;
+                            item[1].height = 60;
+                        }
+                        this.thirdQuarterConfig.push(item[1]);
+                    } else {
+                        if (!item[1].special_field) {
+                            item[1].width = 60;
+                            item[1].height = 120;
+                        }
+                        this.fourthQuarterConfig.push(item[1]);
+                    }
+                });
             },
             cancelTransaction(id) {
                 axiosSessionBoard.delete(baseUrl + '/api/transaction/' + id)
                     .then(response => {
                         console.log("transakcja usunięta" + response)
-                           this.transactionSocket.send(JSON.stringify({
+                        this.transactionSocket.send(JSON.stringify({
                             'message': 'refresh',
                         }));
                     })
@@ -754,7 +791,7 @@
                 axiosSessionBoard.put(baseUrl + '/api/transaction/' + id + '/')
                     .then(response => {
                         console.log("transakcja zakończona" + response)
-                           this.transactionSocket.send(JSON.stringify({
+                        this.transactionSocket.send(JSON.stringify({
                             'message': 'refresh',
                         }));
                     })
@@ -833,6 +870,7 @@
         flex-direction: column;
         justify-content: space-between;
     }
+
     .turn, .dice {
         display: flex;
         justify-content: center;
