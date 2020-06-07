@@ -111,7 +111,7 @@
                             </v-container>
                             <v-container class="turn_buttons">
                                 <v-card-actions class="dice-button">
-                                    <v-btn v-show="user.dice == false" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+                                    <v-btn v-show="user.isPlaying && !user.dice && user.prison == null" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
                                 </v-card-actions>
 
                                 <v-card-actions>
@@ -554,6 +554,7 @@
                         console.log(response.data);
                         let msg = response.data
                         this.message = JSON.stringify(response.data) + "\n"
+                        let card_msg = null;
                         if (msg["number"] == undefined) {
                             this.dice = msg
                         } else {
@@ -562,21 +563,21 @@
 
                             switch (msg["action"]) {
                                 case "normal card":
-                                    this.message = "Stanąłeś na " + msg["name"] + ". ";
-                                    if ("asset" in msg) {
-                                        let asset = msg["asset"]
-                                        if (asset["playingUser_id"] == this.user.id) {
-                                            this.message +=  "To jest twoja posiadłość."
-                                        } else {
-                                            this.message +=  "To jest posiadłość " + asset["playingUser_id"]
-                                        }
-                                    } else {
-                                        this.visible_buy = true;
-                                    }
+                                    this.stayOnField(msg);
                                     break;
                                 case "transport":
-                                    this.visible_buy = true;
-                                    this.message = "Stanąłeś na " + msg["name"] + ". ";
+                                    this.stayOnField(msg);
+                                    break;
+                                case "power_plant":
+                                    this.stayOnField(msg);
+                                    break;
+                                case "get_card":
+                                    card_msg = msg["card"];
+                                    console.log(msg["card"]);
+                                    console.log(card_msg);
+                                    if (card_msg["action"] == "MOVE_TO" || card_msg["action"] == "MOVE" || "move" in card_msg) {
+                                        this.stayOnField(card_msg["move"]);
+                                    }
                                     break;
                             }
                         }
@@ -588,8 +589,27 @@
                     })
                     .catch(error => {
                         console.log(error);
-                        this.message = error.response.data + "\n"
+                        this.message = error + "\n"
                     });
+            },
+            stayOnField(msg) {
+                this.message = "Stanąłeś na " + msg["name"] + ". ";
+                if ("my" in msg && msg["my"]) {
+                    this.message +=  "To jest twoja posiadłość.";
+                }
+                if ("to_who" in msg) {
+                    this.message +=  "To jest posiadłość " + msg["to_who"] + ". ";
+                }
+                if ("pay" in msg) {
+                    this.message += "Musisz zaplacic M " + msg["pay"] + ".";
+                }
+                if (!("my" in msg || "to_who" in msg || "pay" in msg)) {
+                    if ("price" in msg) {
+                        this.visible_buy = true;
+                        this.message += "Kosztuje " + msg["price"] + ". "
+                    }
+
+                }
             },
             endTurn() {
                 console.log("End Turn");
@@ -610,6 +630,8 @@
                     .then(response => {
                         console.log("Zakup przeszedł pomyślnie" + response)
                         this.message += "Zakup przeszedł pomyślnie" + response+ "\n"
+                        this.house.field = null
+                        this.house.number_of_houses = null
                     })
                 .catch(error => {
                         console.log(error.response.data);
@@ -621,6 +643,7 @@
                     .then(response => {
                         console.log(response.data)
                         this.message += response.data + "\n"
+                        this.visible_buy = false;
                     })
                 .catch(error => {
                         console.log(error);
