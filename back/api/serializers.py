@@ -1,4 +1,4 @@
-from api.models import PlayingUser, Estate, Field, Card
+from api.models import PlayingUser, Estate, Field, Card, Asset
 from rest_framework import serializers
 
 # from django.apps import apps
@@ -101,6 +101,12 @@ class CreateTransactionSerializer(serializers.ModelSerializer):
         instance.finished = True
         instance.save()
         return instance
+
+
+class AssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Asset
+        fields = ["isPledged", "field_id", "playingUser_id", "estateNumber"]
 
 
 class EstateSerializer(serializers.ModelSerializer):

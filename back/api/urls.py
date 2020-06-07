@@ -21,7 +21,7 @@ urlpatterns = [
         name="playing-user-ready",
     ),
     path("playing-users/", views.PlayingUserListView.as_view(), name="playing-users"),
-    path("current-user/", views.CurrentPlayer.as_view(), name="current-user"),
+    path("current-user/", views.CurrentPlayerView.as_view(), name="current-user"),
     path("dice-roll/", views.DiceRollView.as_view(), name="dice-roll"),
     path("board/", views.BoardView.as_view(), name="board"),
     path("field/<int:pk>/", views.FieldView.as_view(), name="board"),
@@ -37,7 +37,8 @@ urlpatterns = [
     path("auth-user/", views.AuthUserView.as_view(), name='auth-user'),
     path("user/budget/", views.UserBudgetView.as_view(), name='user-budget'),
     path("user/field/", views.UserFieldView.as_view(), name='user-field'),
-    path("jail-card/use", views.UseGetOutOfJailCard.as_view(), name="use-jail-card"),
-    path("jail-card/count", views.CountGetOutOfJailCard.as_view(), name="count-jail-card"),
+    path("user/playing-user/", views.PlayingUserView.as_view(), name="playing-user"),
+    path("jail-card/use/", views.UseGetOutOfJailCardView.as_view(), name="use-jail-card"),
+    path("jail-card/count/", views.CountGetOutOfJailCardView.as_view(), name="count-jail-card"),
 
 ]

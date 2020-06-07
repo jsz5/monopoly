@@ -28,7 +28,8 @@ from api.serializers import (
     EstateSerializer,
     FieldSerializer,
     FieldEstateSerializer,
-    CardSerializer
+    CardSerializer,
+    AssetSerializer
 )
 
 from django.views.generic import CreateView, TemplateView
@@ -155,7 +156,16 @@ class UserFieldView(APIView):
             return Response("Podany użytkownik nie jest aktywny", status=406)
 
 
-class CurrentPlayer(APIView):
+class PlayingUserView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PlayingUserSerializer
+
+    def get(self, request, *args, **kwargs):
+        playing_user = PlayingUser.objects.get(user=request.user)
+        return Response(PlayingUserSerializer(playing_user).data)
+
+
+class CurrentPlayerView(APIView):
     def get(self, request, *args, **kwargs):
         current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
         auth_playing = PlayingUser.objects.get(user=request.user)
@@ -168,7 +178,6 @@ class CurrentPlayer(APIView):
 
 
 class DiceRollView(ListAPIView):
-
     """
     Active and playing user dice roll, function modify standing field
     """
@@ -199,6 +208,7 @@ class DiceRollView(ListAPIView):
                 self.asset = Asset.objects.get(field=self.field)
                 if self.asset.isPledged:
                     self.asset = None
+                self.response['asset'] = AssetSerializer(self.asset).data
             except Asset.DoesNotExist:
                 self.asset = None
 
@@ -280,6 +290,7 @@ class DiceRollView(ListAPIView):
         elif self.field.field_type_id == 9:
             #     transport
             # todo: test
+            response['action'] = 'transport'
             if self.asset and self.asset.playingUser != self.user:
                 transport = Asset.objects.get(
                     Q(field__in=Field.objects.filter(field_type=9)),
@@ -335,7 +346,7 @@ class DiceRollView(ListAPIView):
             # GET_MONEY_FROM_BANK
             self.user.budget += self.parameter["get"]
 
-        return self.card_data
+        return dict(self.card_data)
 
     def move(self, field_id):
         self.user.field_id = field_id
@@ -402,7 +413,7 @@ class DiceRollView(ListAPIView):
             self.card_data.budget += self.parameter["get"]
 
 
-class UseGetOutOfJailCard(UpdateAPIView):
+class UseGetOutOfJailCardView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PlayingUserSerializer
 
@@ -425,7 +436,7 @@ class UseGetOutOfJailCard(UpdateAPIView):
         return Response("Użytkownik wyszedł z więzienia.")
 
 
-class CountGetOutOfJailCard(APIView):
+class CountGetOutOfJailCardView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PlayingUserSerializer
 
