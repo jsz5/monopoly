@@ -1,13 +1,15 @@
 <template>
-    <div class="board">
-        <div :key="budgetKey">Zalogowany jako {{myUsername}}. <br> Budżet: {{budget}} <br> Stoisz na polu
+    <div class="board-all">
+        <v-container class="log-info">
+            <h3>{{message}}</h3>
+        </v-container>
+        <v-container :key="budgetKey">Zalogowany jako {{myUsername}}. Budżet: {{budget}}. Stoisz na polu
             {{currentField}}.
-        </div>
+        </v-container>
+        <div class="board">
         <v-container>
             <v-col>
                 <v-row :key="boardKey">
-
-
                     <div class="first_part_board">
                         <v-sheet
                                 :width="field.width"
@@ -87,14 +89,14 @@
                                         <v-text-field
                                                 label="ID pola"
                                                 outlined
-                                                v-model="house_id"
+                                                v-model="house.field"
                                         ></v-text-field>
                                     </v-col>
                                     <v-col sm="4" md="2">
                                         <v-text-field
                                                 label="ilość domków"
                                                 outlined
-                                                v-model="house_quantity"
+                                                v-model="house.number_of_houses"
                                         ></v-text-field>
                                     </v-col>
                                     <v-card-actions>
@@ -102,9 +104,14 @@
                                     </v-card-actions>
                                 </v-container>
                             </v-container>
+                            <v-container class="buy-button">
+                                <v-card-actions>
+                                    <v-btn v-show="visible_buy" class="mr-4" @click="buyProperty">Kup</v-btn>
+                                </v-card-actions>
+                            </v-container>
                             <v-container class="turn_buttons">
                                 <v-card-actions class="dice-button">
-                                    <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+                                    <v-btn v-show="user.dice == false" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
                                 </v-card-actions>
 
                                 <v-card-actions>
@@ -368,6 +375,7 @@
             </v-col>
         </v-container>
     </div>
+    </div>
 
 </template>
 
@@ -381,15 +389,32 @@
         data: () => {
             return {
                 boardConfig: {},
-                visible_play: false,
+                // visible_play: false,
                 visible_end: false,
                 visible_houses: false,
-                house_quantity: null,
-                house_id: null,
+                visible_buy: false,
+                house: {
+                    number_of_houses: null,
+                    field: null,
+                },
+                user: {
+                    id: null,
+                    place: null,
+                    isActive: false,
+                    isPlaying: false,
+                    budget: 0,
+                    field_id: 0,
+                    dice: false,
+                    prison: false,
+                    get_out_of_jail_card: 0
+                },
                 myTurn: false,
                 turn: '',
                 dice: null,
-                message: '',
+                message: "",
+                // message: {
+                //     action: null
+                // },
                 // url_board: baseUrl + '/api/board/',
                 url: "ws://0.0.0.0:8000",
                 firstQuarterConfig: [],
@@ -464,6 +489,7 @@
             this.fetchUserInfo()
             this.fetchPlayingUsers()
             this.fetchCurrentUser()
+            this.fetchPlayingUser()
 
         },
         mounted() {
@@ -498,27 +524,15 @@
                         this.boardConfig = msg.board;
                         this.configureBoard()
                         this.boardKey += 1
-                        // this.boardConfig = Object.assign({}, this.boardConfig, msg.board)
-                        // this.attachBoard(msg.board);
-                        // this.boardConfig = JSON.parse(JSON.stringify(msg.board));
-                        // console.log(msg.board);
-                        // this.n();
-                        // this.fetchBoard(false);
-                        // this.boardConfig["3"].users = [3,5];
                         this.fetchUserInfo();
-                        // this.configureBoard();
-                        // this.visible_play = true;
-                        // document.getElementById("start_button").style.visibility = 'visible';
+                        this.fetchPlayingUser();
+                        console.log(this.user);
+                        // this.fetchCurrentUser();
                         break;
                     case "turn":
                         this.setTurn(msg.your_turn, msg.username);
-                        // this.fetchBoard(false);
                         this.fetchUserInfo();
-                        //
-                        // this.fetchUserInfo();
-                        // dodałem zamykanie połączenia przed przejściem na inną stronę
-                        // this.lobbySocket.close()
-                        // this.$router.push('/board');
+                        this.fetchPlayingUser();
                         break;
                     case "refresh_transaction":
                         this.boardConfig = msg.board;
@@ -533,41 +547,48 @@
                         break;
                 }
             },
-            async n() {
-                await axiosSessionBoard.get(baseUrl + '/api/board/')
-                    .then(response => {
-                        console.log("GET BOARD")
-                        console.log(response)
-                        var board = JSON.parse(JSON.stringify(response.data))
-                        // this.boardConfig = null
-                        // this.attachBoard(response.data)
-                        this.boardConfig = board
-                    })
-                    .catch(error => {
-                        console.log("ERROR")
-                        console.log(error.response);
-                    });
-            },
-
             startTurn() {
                 console.log("start turn");
                 axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
                     .then(response => {
                         console.log(response.data);
-                        if (response.data["number"] == undefined) {
-                            this.dice = response.data
+                        let msg = response.data
+                        this.message = JSON.stringify(response.data) + "\n"
+                        if (msg["number"] == undefined) {
+                            this.dice = msg
                         } else {
-                            this.dice = "Rzuciłeś " + response.data["number"];
+                            this.dice = "Rzuciłeś " + msg["number"];
                             this.showBuyOption();
+
+                            switch (msg["action"]) {
+                                case "normal card":
+                                    this.message = "Stanąłeś na " + msg["name"] + ". ";
+                                    if ("asset" in msg) {
+                                        let asset = msg["asset"]
+                                        if (asset["playingUser_id"] == this.user.id) {
+                                            this.message +=  "To jest twoja posiadłość."
+                                        } else {
+                                            this.message +=  "To jest posiadłość " + asset["playingUser_id"]
+                                        }
+                                    } else {
+                                        this.visible_buy = true;
+                                    }
+                                    break;
+                                case "transport":
+                                    this.visible_buy = true;
+                                    this.message = "Stanąłeś na " + msg["name"] + ". ";
+                                    break;
+                            }
                         }
 
-                        this.visible_play = false;
+                        // this.visible_play = false;
                         this.visible_end = true;
                         // this.fetchBoard(false);
                         this.sendUpdate();
                     })
                     .catch(error => {
                         console.log(error);
+                        this.message = error.response.data + "\n"
                     });
             },
             endTurn() {
@@ -577,6 +598,7 @@
                 }))
                 this.visible_end = false;
                 this.visible_houses = false;
+                this.visible_buy = false;
                 this.dice = null;
             },
             showBuyOption() {
@@ -584,6 +606,26 @@
             },
             buyHouses() {
                 console.log("buyHouses");
+                axiosSessionBoard.post(baseUrl + '/api/field/buy-estate/', this.house)
+                    .then(response => {
+                        console.log("Zakup przeszedł pomyślnie" + response)
+                        this.message += "Zakup przeszedł pomyślnie" + response+ "\n"
+                    })
+                .catch(error => {
+                        console.log(error.response.data);
+                        this.message = error.response.data + "\n"
+                });
+            },
+            buyProperty() {
+                axiosSessionBoard.post(baseUrl + '/api/field/buy')
+                    .then(response => {
+                        console.log(response.data)
+                        this.message += response.data + "\n"
+                    })
+                .catch(error => {
+                        console.log(error);
+                        this.message = error.response.data + "\n"
+                });
             },
             sendUpdate() {
                 this.boardSocket.send(JSON.stringify({
@@ -595,7 +637,7 @@
                 // console.log(response.data)
                 if (this.myTurn === true) {
                     this.turn = "Twoja tura";
-                    this.visible_play = true;
+                    // this.visible_play = true;
                 } else {
                     this.turn = "Teraz gra " + userTurn;
                 }
@@ -698,6 +740,18 @@
                 axiosSessionBoard.get(baseUrl + '/api/current-user/')
                     .then(response => {
                         this.setTurn(response.data["turn"], response.data["turn_user"])
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+            },
+            fetchPlayingUser() {
+                axiosSessionBoard.get(baseUrl + '/api/user/playing-user/')
+                    .then(response => {
+                        this.user = response.data;
+                        if (this.user.isPlaying && this.user.dice) {
+                            this.visible_end = true;
+                        }
                     })
                     .catch(error => {
                         console.log(error);
@@ -899,7 +953,7 @@
         justify-content: center;
     }
 
-    .buy_houses_buttons, .turn_buttons {
+    .buy_houses_buttons, .turn_buttons, .buy-button {
         display: flex;
         align-items: center;
         justify-content: center;
