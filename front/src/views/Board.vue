@@ -5,10 +5,10 @@
         </div>
         <v-container>
             <v-col>
-                <v-row>
+                <v-row :key="boardKey">
 
 
-                    <div class="first_part_board">
+                    <div class="first_part_board" >
                         <v-sheet
                                 :width="field.width"
                                 :height="field.height"
@@ -43,7 +43,7 @@
                         </v-sheet>
                     </div>
                     <div class="middle_part">
-                        <div class="second_part_board">
+                        <div class="second_part_board" >
                             <v-sheet
                                     :width="field.width"
                                     :height="field.height"
@@ -112,7 +112,7 @@
                                 </v-card-actions>
                             </v-container>
                         </v-container>
-                        <div class="fourth_part_board">
+                        <div class="fourth_part_board" >
                             <v-sheet
                                     :width="field.width"
                                     :height="field.height"
@@ -145,7 +145,7 @@
                         </div>
                     </div>
 
-                    <div class="third_part_board">
+                    <div class="third_part_board" >
                         <v-sheet
                                 :width="field.width"
                                 :height="field.height"
@@ -450,7 +450,8 @@
                 transaction1Key: 1,
                 transaction2Key: 1,
                 budgetKey: 1,
-                boardKey: 1
+                boardKey: 1,
+
             };
         },
 
@@ -519,7 +520,12 @@
                         break;
                     case "refresh_transaction":
                         this.boardConfig = msg.board;
+                        this.configureBoard()
                         this.boardKey += 1
+                        this.boardKey2 += 1
+                        this.boardKey3 += 1
+                        this.boardKey4 += 1
+
                         this.fetchTransactions()
                         this.fetchUserInfo()
                         this.transaction1Key += 1
@@ -554,7 +560,7 @@
                             this.dice = response.data
                         } else {
                             this.dice = "Rzuciłeś " + response.data["number"];
-                              this.showBuyOption();
+                            this.showBuyOption();
                         }
 
                         this.visible_play = false;
@@ -700,6 +706,10 @@
                     })
             },
             configureBoard() {
+                this.firstQuarterConfig = []
+                this.secondQuarterConfig = []
+                this.thirdQuarterConfig = []
+                this.fourthQuarterConfig = []
                 Object.entries(this.boardConfig).map((item, index) => {
                     if (
                         item[1].type === "GO_TO_JAIL" ||
