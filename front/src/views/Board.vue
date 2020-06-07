@@ -111,7 +111,7 @@
                             </v-container>
                             <v-container class="turn_buttons">
                                 <v-card-actions class="dice-button">
-                                    <v-btn v-show="user.isPlaying && !user.dice && user.prison == null" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+                                    <v-btn v-show="user.isPlaying && !user.dice" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
                                 </v-card-actions>
 
                                 <v-card-actions>
