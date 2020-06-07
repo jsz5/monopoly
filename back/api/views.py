@@ -207,6 +207,8 @@ class DiceRollView(ListAPIView):
         response['name'] = self.field.name
         print(self.field.field_type)
         if self.field.field_type_id == 2:
+            self.user.prison = {"queue": 2, "checked": True}
+            self.user.save()
             # TODO: jail
             response['action'] = 'visit jail'
         elif self.field.field_type_id == 3:
@@ -220,9 +222,12 @@ class DiceRollView(ListAPIView):
             response['action'] = 'pay tax'
             response['amount'] = to_pay
         elif self.field.field_type_id == 5:
+            self.user.prison = {"queue": 2, "checked": True}
+            self.user.save()
             # TODO: go to jail
             response['action'] = 'go to jail'
         elif self.field.field_type_id == 7:
+
             #     normal
             # TODO: tests
             response['action'] = 'normal card'
