@@ -73,7 +73,7 @@ class FieldType(models.Model):
 
 class Card(models.Model):
     description = models.TextField(verbose_name=_("Opis karty"))
-    parameter = JSONField(verbose_name=_("Parametry karty"))
+    parameter = JSONField(verbose_name=_("Parametry karty"),null=True, blank=True)
     action = models.ForeignKey(
         Action, related_name="cards", on_delete=models.CASCADE, verbose_name=_("Akcja")
     )
