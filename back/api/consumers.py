@@ -132,6 +132,8 @@ class BoardConsumer(WebsocketConsumer):
             self.__send_update()
         elif action == "end_turn":
             self.__end_turn()
+        elif action == "refresh_transaction":
+            self.__update_transaction()
 
     def update_message(self, event):
         board = event["board"]
@@ -145,6 +147,9 @@ class BoardConsumer(WebsocketConsumer):
         event['your_turn'] = (user == PlayingUser.objects.filter(user=self.user).first())
 
         self.send(text_data=json.dumps(event))
+
+    def refresh_transaction(self, event):
+        self.send(text_data=json.dumps({"action": event["type"], "board": event["board"]}))
 
     def __end_turn(self):
         self.__set_order()
@@ -169,7 +174,7 @@ class BoardConsumer(WebsocketConsumer):
             }
         )
 
-    def __send_update(self):
+    def __get_board(self):
         d = dict()
         for obj in Field.objects.all():
             d[obj.pk] = {
@@ -194,9 +199,16 @@ class BoardConsumer(WebsocketConsumer):
             d[asset.field.pk]["houses"] = (
                 asset.estateNumber if asset.estateNumber else 0
             )
+        return d
 
+    def __update_transaction(self):
         async_to_sync(self.channel_layer.group_send)(
-            self.board_group_name, {"type": "update_message", "board": d}
+            self.board_group_name, {"type": "refresh_transaction", "board": self.__get_board()}
+        )
+
+    def __send_update(self):
+        async_to_sync(self.channel_layer.group_send)(
+            self.board_group_name, {"type": "update_message", "board": self.__get_board()}
         )
 
 

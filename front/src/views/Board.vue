@@ -5,129 +5,163 @@
         </div>
         <v-container>
             <v-col>
-                <v-row>
+                <v-row >
 
-                    <div class="first_part_board">
-                        <v-sheet
-                                :width="field.width"
-                                :height="field.height"
-                                v-for="(field, index) in firstQuarterConfig"
-                                :key="index"
-                                :color="field.color"
-                                class="first_quarter_fields"
-                        >
+
+                        <div class="first_part_board">
+                            <v-sheet
+                                    :width="field.width"
+                                    :height="field.height"
+                                    v-for="(field, index) in firstQuarterConfig"
+                                    :key="index"
+                                    :color="field.color"
+                                    class="first_quarter_fields"
+                            >
                                        <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                            <span v-if="field.price != null">{{field.price}}$
+                                <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
                 </span><br>
-                            <span v-if="field.type=='START'"><b>START</b></span>
-                            <v-icon small v-for="(id, house) in field.houses"
-                                    :key="id.toString() + house.toString()">
-                                mdi-home
-                            </v-icon>
-                            <!--                <div v-if="field.users.length  > 0">-->
-                            <v-icon small v-for="user in field.users" :key="user.toString()">
-                                mdi-numeric-{{user}}-box-outline
-                            </v-icon>
-                            <!--                </div>-->
+                                <span v-if="field.type=='START'"><b>START</b></span>
+                                <v-icon small v-for="(id, house) in field.houses"
+                                        :key="id.toString() + house.toString()">
+                                    mdi-home
+                                </v-icon>
+                                <!--                <div v-if="field.users.length  > 0">-->
+                                <v-icon small v-for="user in field.users" :key="user.toString()">
+                                    mdi-numeric-{{user}}-box-outline
+                                </v-icon>
+                                <!--                </div>-->
 
-                            <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                            <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
-                            <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
-                            <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                        </v-sheet>
-                    </div>
-                    <div class="middle_part">
-                        <div class="second_part_board">
-                            <v-sheet
-                                    :width="field.width"
-                                    :height="field.height"
-                                    v-for="(field, index) in secondQuarterConfig"
-                                    :key="index"
-                                    :color="field.color"
-                                    class="second_quarter_fields"
-                            >
+                                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                                <v-icon x-large v-if="field.type=='JAIL'">mdi-handcuffs</v-icon>
+                                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                            </v-sheet>
+                        </div>
+                        <div class="middle_part">
+                            <div class="second_part_board">
+                                <v-sheet
+                                        :width="field.width"
+                                        :height="field.height"
+                                        v-for="(field, index) in secondQuarterConfig"
+                                        :key="index"
+                                        :color="field.color"
+                                        class="second_quarter_fields"
+                                >
                             <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
-                                <span v-if="field.price != null">{{field.price}}$
+                                    <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
                 </span><br>
-                                <v-icon small v-for="(id, house) in field.houses"
-                                        :key="id.toString() + house.toString()">
-                                    mdi-home
-                                </v-icon>
-                                <v-icon small v-for="user in field.users" :key="user.toString()">
-                                    mdi-numeric-{{user}}-box-outline
-                                </v-icon>
-                                <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
-                                <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                                <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
-                            </v-sheet>
-                        </div>
-                        <v-container class="inside_part">
-                            <v-container class="dice">
-                                <h2>{{dice}}</h2>
-                            </v-container>
-                            <v-container class="turn">
-                                <h2>{{turn}}</h2>
-                            </v-container>
-                            <v-container v-show="visible_houses" class="house-buy">
-                                <h2> Kupno domków</h2>
-                                <v-container class="buy_houses_buttons">
-                                    <v-col sm="4" md="2">
-                                        <v-text-field
-                                                label="ID pola"
-                                                outlined
-                                                v-model="house_id"
-                                        ></v-text-field>
-                                    </v-col>
-                                    <v-col sm="4" md="2">
-                                        <v-text-field
-                                                label="ilość domków"
-                                                outlined
-                                                v-model="house_quantity"
-                                        ></v-text-field>
-                                    </v-col>
+                                    <v-icon small v-for="(id, house) in field.houses"
+                                            :key="id.toString() + house.toString()">
+                                        mdi-home
+                                    </v-icon>
+                                    <v-icon small v-for="user in field.users" :key="user.toString()">
+                                        mdi-numeric-{{user}}-box-outline
+                                    </v-icon>
+                                    <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                                    <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                                    <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                                    <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                                </v-sheet>
+                            </div>
+                            <v-container class="inside_part">
+                                <v-container class="dice">
+                                    <h2>{{dice}}</h2>
+                                </v-container>
+                                <v-container class="turn">
+                                    <h2>{{turn}}</h2>
+                                </v-container>
+                                <v-container v-show="visible_houses" class="house-buy">
+                                    <h2> Kupno domków</h2>
+                                    <v-container class="buy_houses_buttons">
+                                        <v-col sm="4" md="2">
+                                            <v-text-field
+                                                    label="ID pola"
+                                                    outlined
+                                                    v-model="house_id"
+                                            ></v-text-field>
+                                        </v-col>
+                                        <v-col sm="4" md="2">
+                                            <v-text-field
+                                                    label="ilość domków"
+                                                    outlined
+                                                    v-model="house_quantity"
+                                            ></v-text-field>
+                                        </v-col>
+                                        <v-card-actions>
+                                            <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
+                                        </v-card-actions>
+                                    </v-container>
+                                </v-container>
+                                <v-container class="turn_buttons">
+                                    <v-card-actions class="dice-button">
+                                        <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
+                                    </v-card-actions>
+
                                     <v-card-actions>
-                                        <v-btn class="mr-4" @click="buyHouses">Kup</v-btn>
+                                        <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
                                     </v-card-actions>
                                 </v-container>
                             </v-container>
-                            <v-container class="turn_buttons">
-                                <v-card-actions class="dice-button">
-                                    <v-btn v-show="visible_play" class="mr-4" @click="startTurn">Rzuc kostka</v-btn>
-                                </v-card-actions>
+                            <div class="fourth_part_board">
+                                <v-sheet
+                                        :width="field.width"
+                                        :height="field.height"
+                                        v-for="(field, index) in fourthQuarterConfig"
+                                        :key="index"
+                                        :color="field.color"
+                                        class="fourth_quarter_fields"
+                                >
+                                   <span style=" outline: 3px solid blue;">
+                   {{field.id}}
+                  </span>
+                                    <span v-if="field.price != null">{{field.price}}$
+                  <span v-if="field.owner != null">
+                    owner:{{field.owner}}
+                  </span>
 
-                                <v-card-actions>
-                                    <v-btn v-show="visible_end" class="mr-4" @click="endTurn">Zakończ turę</v-btn>
-                                </v-card-actions>
-                            </v-container>
-                        </v-container>
-                        <div class="fourth_part_board">
+                </span><br>
+                                    <v-icon small v-for="(id, house) in field.houses"
+                                            :key="id.toString() + house.toString()">
+                                        mdi-home
+                                    </v-icon>
+                                    <v-icon small v-for="user in field.users" :key="user.toString()">
+                                        mdi-numeric-{{user}}-box-outline
+                                    </v-icon>
+                                    <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
+                                    <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
+                                    <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
+                                    <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                                </v-sheet>
+                            </div>
+                        </div>
+
+                        <div class="third_part_board">
                             <v-sheet
                                     :width="field.width"
                                     :height="field.height"
-                                    v-for="(field, index) in fourthQuarterConfig"
+                                    v-for="(field, index) in thirdQuarterConfig"
                                     :key="index"
                                     :color="field.color"
-                                    class="fourth_quarter_fields"
+                                    class="third_quarter_fields"
+                                    
                             >
-                                   <span style=" outline: 3px solid blue;">
+                                       <span style=" outline: 3px solid blue;">
                    {{field.id}}
                   </span>
                                 <span v-if="field.price != null">{{field.price}}$
                   <span v-if="field.owner != null">
                     owner:{{field.owner}}
                   </span>
-
                 </span><br>
                                 <v-icon small v-for="(id, house) in field.houses"
                                         :key="id.toString() + house.toString()">
@@ -138,46 +172,15 @@
                                 </v-icon>
                                 <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
                                 <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                                <v-icon x-large v-if="field.type=='PAY'">mdi-cash-100</v-icon>
                                 <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
+                                <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-handcuffs</v-icon>
+                                <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-hand-pointing-up</v-icon>
+                                <v-icon x-large v-if="field.type=='EMPTY'">mdi-power-plug</v-icon>
+                                <v-icon x-large v-if="field.type=='EMPTY'">mdi-car</v-icon>
                             </v-sheet>
                         </div>
-                    </div>
 
-                    <div class="third_part_board">
-                        <v-sheet
-                                :width="field.width"
-                                :height="field.height"
-                                v-for="(field, index) in thirdQuarterConfig"
-                                :key="index"
-                                :color="field.color"
-                                class="third_quarter_fields"
-                        >
-                                       <span style=" outline: 3px solid blue;">
-                   {{field.id}}
-                  </span>
-                            <span v-if="field.price != null">{{field.price}}$
-                  <span v-if="field.owner != null">
-                    owner:{{field.owner}}
-                  </span>
-                </span><br>
-                            <v-icon small v-for="(id, house) in field.houses"
-                                    :key="id.toString() + house.toString()">
-                                mdi-home
-                            </v-icon>
-                            <v-icon small v-for="user in field.users" :key="user.toString()">
-                                mdi-numeric-{{user}}-box-outline
-                            </v-icon>
-                            <v-icon x-large v-if="field.type=='CARD'">mdi-cards-outline</v-icon>
-                            <v-icon x-large v-if="field.type=='TRANSPORT'">mdi-train</v-icon>
-                            <v-icon x-large v-if="field.type=='POWER_PLANT'">mdi-transmission-tower</v-icon>
-                            <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-handcuffs</v-icon>
-                            <v-icon x-large v-if="field.type=='GO_TO_JAIL'">mdi-hand-pointing-up</v-icon>
-                            <v-icon x-large v-if="field.type=='EMPTY'">mdi-power-plug</v-icon>
-                            <v-icon x-large v-if="field.type=='EMPTY'">mdi-car</v-icon>
-                        </v-sheet>
-                    </div>
-                    
+
                 </v-row>
 
                 <v-row>
@@ -378,7 +381,6 @@
         data: () => {
             return {
                 boardConfig: {},
-                transactionSocket: undefined,
                 visible_play: false,
                 visible_end: false,
                 visible_houses: false,
@@ -447,7 +449,8 @@
                 sendByOthers: [],
                 transaction1Key: 1,
                 transaction2Key: 1,
-                budgetKey: 1
+                budgetKey: 1,
+                boardKey: 1
             };
         },
 
@@ -457,7 +460,7 @@
             console.log(this.boardConfig)
 
             this.fetchTransactions()
-            this.fetchUsername()
+            this.fetchUserInfo()
             this.fetchPlayingUsers()
             this.fetchCurrentUser()
 
@@ -483,12 +486,6 @@
                 // this.lobbySocket.onopen = this.sendMessage
 
                 this.boardSocket.onmessage = this.onMessage
-
-                this.transactionSocket = new WebSocket(
-                    this.url
-                    + '/ws/transaction/' + '?token=' + getToken()
-                );
-                this.transactionSocket.onmessage = this.onMessageTransaction
             },
             onMessage(event) {
                 let msg = JSON.parse(event.data);
@@ -505,7 +502,7 @@
                         // this.n();
                         // this.fetchBoard(false);
                         // this.boardConfig["3"].users = [3,5];
-                        this.fetchUsername();
+                        this.fetchUserInfo();
                         // this.configureBoard();
                         // this.visible_play = true;
                         // document.getElementById("start_button").style.visibility = 'visible';
@@ -513,12 +510,22 @@
                     case "turn":
                         this.setTurn(msg.your_turn, msg.username);
                         // this.fetchBoard(false);
-                        this.fetchUsername();
+                        this.fetchUserInfo();
                         //
-                        // this.fetchUsername();
+                        // this.fetchUserInfo();
                         // dodałem zamykanie połączenia przed przejściem na inną stronę
                         // this.lobbySocket.close()
                         // this.$router.push('/board');
+                        break;
+                    case "refresh_transaction":
+                        this.boardConfig = msg.board;
+                        this.boardKey += 1
+                        this.fetchTransactions()
+                        this.fetchUserInfo()
+                        this.transaction1Key += 1
+                        this.transaction2Key += 1
+                        // window.location.reload() todo: do uzgodnienia
+                        this.budgetKey += 1
                         break;
                 }
             },
@@ -537,19 +544,7 @@
                         console.log(error.response);
                     });
             },
-            onMessageTransaction(event) {
-                let msg = JSON.parse(event.data);
-                console.log(msg)
 
-                switch (msg.message) {
-                    case "refresh":
-                        this.fetchTransactions()
-                        this.fetchUsername()
-                        this.transactionKey += 1
-                        this.budgetKey += 1
-                        break;
-                }
-            },
             startTurn() {
                 console.log("start turn");
                 axiosSessionBoard.get(baseUrl + '/api/dice-roll/')
@@ -610,7 +605,7 @@
                         console.log(error);
                     });
             },
-            fetchUsername() {
+            fetchUserInfo() {
                 axiosSessionBoard.get(baseUrl + '/api/auth-user/')
                     .then(response => {
                         this.myUsername = response.data["username"]
@@ -779,8 +774,9 @@
                 axiosSessionBoard.delete(baseUrl + '/api/transaction/' + id)
                     .then(response => {
                         console.log("transakcja usunięta" + response)
-                        this.transactionSocket.send(JSON.stringify({
-                            'message': 'refresh',
+
+                        this.boardSocket.send(JSON.stringify({
+                            'action': 'refresh_transaction',
                         }));
                     })
                     .catch(error => {
@@ -791,8 +787,8 @@
                 axiosSessionBoard.put(baseUrl + '/api/transaction/' + id + '/')
                     .then(response => {
                         console.log("transakcja zakończona" + response)
-                        this.transactionSocket.send(JSON.stringify({
-                            'message': 'refresh',
+                        this.boardSocket.send(JSON.stringify({
+                            'action': 'refresh_transaction',
                         }));
                     })
                     .catch(error => {
@@ -804,8 +800,8 @@
                 axiosSessionBoard.post(baseUrl + '/api/transaction/', this.transaction)
                     .then(response => {
                         console.log("transakcja utworzona pomyślnie" + response)
-                        this.transactionSocket.send(JSON.stringify({
-                            'message': 'refresh',
+                        this.boardSocket.send(JSON.stringify({
+                            'action': 'refresh_transaction',
                         }));
                     })
                     .catch(error => {
