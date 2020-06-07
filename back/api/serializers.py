@@ -14,7 +14,7 @@ class PlayingUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayingUser
         depth = 1
-        fields = ["id", "user_id", "place", "isPlaying", "isActive", "budget", "user"]
+        fields = ["id", "user_id", "place", "isPlaying", "isActive", "budget", "user", "dice", "prison", "get_out_of_jail_card"]
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -131,6 +131,30 @@ class AuthUserView(APIView):
             return Response("Wystąpił błąd", status=500)
 
 
+class UserBudgetView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            playing_user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if playing_user.isActive:
+            return Response({"budget": playing_user.budget})
+        else:
+            return Response("Podany użytkownik nie jest aktywny", status=406)
+
+
+class UserFieldView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            playing_user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+        if playing_user.isActive:
+            return Response({"field": playing_user.field})
+        else:
+            return Response("Podany użytkownik nie jest aktywny", status=406)
+
+
 class CurrentPlayer(APIView):
     def get(self, request, *args, **kwargs):
         current_playing_id = PlayingUser.objects.get(isPlaying=True).user_id
@@ -144,6 +168,7 @@ class CurrentPlayer(APIView):
 
 
 class DiceRollView(ListAPIView):
+
     """
     Active and playing user dice roll, function modify standing field
     """
@@ -155,7 +180,7 @@ class DiceRollView(ListAPIView):
             self.user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
             return Response("Nieprawidłowy użytkownik", status=403)
-        if self.user.prison and self.user.prison["checked"]:
+        if (self.user.prison and self.user.prison["checked"]) or not self.user.dice:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
 
         if self.user.isActive and self.user.isPlaying:
@@ -177,7 +202,7 @@ class DiceRollView(ListAPIView):
             except Asset.DoesNotExist:
                 self.asset = None
 
-            self.response.update(self.__check_field_type())
+            self.response.update(self.check_field_type())
 
             if self.user.budget < 0:
                 for asset in Asset.objects.filter(playingUser=self.user):
@@ -190,30 +215,25 @@ class DiceRollView(ListAPIView):
                 self.user.isActive = False
                 return Response("Przegrana gra")
 
-            # todo prison
-            # todo saldo użytkownika dogadac
-
             self.user.field = self.field
+            self.user.dice = False
             self.user.save()
 
-            # todo prison
-            # todo saldo użytkownika dogadac
             return Response(self.response)
         else:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
 
-    def __check_field_type(self):
+    def check_field_type(self):
         response = dict()
         response['name'] = self.field.name
         print(self.field.field_type)
         if self.field.field_type_id == 2:
             response['action'] = 'visit jail'
         elif self.field.field_type_id == 3:
-            # TODO: test
+            card_id = random.randint(1, Card.objects.count())
             response['action'] = 'get card'
-            response['card'] = self.__card()
+            response['card'] = self.card(card_id)
         elif self.field.field_type_id == 4:
-            # TODO: pay albo dac w field.price cene albo ifem jak jest teraz
             to_pay = 2000 if self.field.pk == 39 else 1000
             self.user.budget -= to_pay
             response['action'] = 'pay tax'
@@ -223,8 +243,7 @@ class DiceRollView(ListAPIView):
             self.user.save()
             response['action'] = 'go to jail'
         elif self.field.field_type_id == 7:
-
-            #     normal
+            # normal
             # TODO: tests
             response['action'] = 'normal card'
             if self.asset and self.asset.playingUser != self.user:
@@ -239,13 +258,13 @@ class DiceRollView(ListAPIView):
                     fee = estate.fee_three_houses
                 elif self.asset.estateNumber == 4:
                     fee = estate.fee_four_houses
-                elif self.estateNumber == 5:
+                elif self.asset.estateNumber == 5:
                     fee = estate.fee_five_houses
                 response['pay'] = fee
-                response['to_who'] = self.asset.playingUser.user.username  # TODO: CHECK
+                response['to_who'] = self.asset.playingUser.user.username #TODO: CHECK
                 self.user.budget -= fee
         elif self.field.field_type_id == 8:
-            #     power plant
+            # power plant
             # todo: test
             if self.asset and self.asset.playingUser != self.user:
                 # if player has one power plant
@@ -260,28 +279,28 @@ class DiceRollView(ListAPIView):
         elif self.field.field_type_id == 9:
             #     transport
             # todo: test
-            transport = Asset.objects.get(
-                Q(field__in=Field.objects.filter(field_type=9)),
-                Q(playingUser_id=self.asset.playingUser)
-            )
-            if len(transport) == 1:
-                fee = 250
-            elif len(transport) == 2:
-                fee = 500
-            elif len(transport) == 3:
-                fee = 1000
-            elif len(transport) == 4:
-                fee = 2000
-            self.user.budget -= fee
-            response['pay'] = fee
-            response['to_who'] = self.asset.playingUser.user.username
+            if self.asset and self.asset.playingUser != self.user:
+                transport = Asset.objects.get(
+                    Q(field__in=Field.objects.filter(field_type=9)),
+                    Q(playingUser_id=self.asset.playingUser)
+                )
+                if len(transport) == 1:
+                    fee = 250
+                elif len(transport) == 2:
+                    fee = 500
+                elif len(transport) == 3:
+                    fee = 1000
+                elif len(transport) == 4:
+                    fee = 2000
+                self.user.budget -= fee
+                response['pay'] = fee
+                response['to_who'] = self.asset.playingUser.user.username
 
         return dict(response)
 
-    def __card(self):
-        card_id = random.randint(1, Card.objects.count())
+    def card(self, card_id):
         try:
-            card = Card.objects.get(id=card_id)
+            card = Card.objects.get(pk=card_id)
         except Card.DoesNotExist:
             return Response("Card does't exist", status=403)
         self.card_data = CardSerializer(card).data
@@ -302,6 +321,7 @@ class DiceRollView(ListAPIView):
             self.user.budget -= self.parameter["pay"]
         elif self.card_data["action_id"] == 6:
             # TODO: GET OUT OF JAIL
+            self.user.get_out_of_jail_card += 1
             pass
         elif self.card_data["action_id"] == 7:
             # PAY_FOR_ASSETS TODO: TEST
@@ -329,7 +349,7 @@ class DiceRollView(ListAPIView):
         self.move(new_field_id)
 
         self.card_data["new_field_id"] = new_field_id
-        self.card_data['move'] = self.__check_field_type()
+        self.card_data['move'] = self.check_field_type()
 
     def __move_to(self):
         if 'dice' in self.parameter:
@@ -339,17 +359,19 @@ class DiceRollView(ListAPIView):
             new_field = Field.objects.filter(
                 Q(field_type_id=self.parameter['field_type']),
                 Q(id__gt=self.field.id)
-            ).order_by('-id').first()
+            ).order_by('id').first()
             self.move(new_field.pk)
 
-            self.card_data['move'] = self.__check_field_type()
+            self.card_data['move'] = self.check_field_type()
         elif 'field_id' in self.parameter:
             new_field_id = self.parameter['field_id']
             self.move(new_field_id)
 
-            self.card_data['move'] = self.__check_field_type()
+            self.card_data['move'] = self.check_field_type()
 
     def __pay_all_users(self):
+        self.card_data["pay"] = 0
+
         for user_to_pay in PlayingUser.objects.filter(~Q(id=self.user.id)):
             self.card_data["pay"] += self.parameter["pay"]
             user_to_pay.budget += self.parameter["pay"]
@@ -357,9 +379,10 @@ class DiceRollView(ListAPIView):
             user_to_pay.save()
 
     def __pay_for_assets(self):
-        for _ in Asset.objects.filter(playingUser_id=self.user.id):
-            number_of_houses = self.asset.estateNumber if self.asset else 0
-            self.card_data["pay"] = 0
+        self.card_data["pay"] = 0
+        for asset in Asset.objects.filter(playingUser_id=self.user.id):
+            number_of_houses = asset.estateNumber if asset else 0
+
             if number_of_houses == 5:
                 # HOTEL
                 self.user.budget -= self.parameter["hotel"]
@@ -375,6 +398,46 @@ class DiceRollView(ListAPIView):
             user_to_pay.budget -= self.parameter["get"]
             self.response["get"] += self.parameter["get"]
             self.card_data.budget += self.parameter["get"]
+
+
+class UseGetOutOfJailCard(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PlayingUserSerializer
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+
+        if not (user.prison and self.user.prison["checked"]):
+            return Response("Użytkownik nie jest w więzieniu", status=403)
+
+        if user.isActive and user.isPlaying:
+            if user.get_out_of_jail_card > 0:
+                user.get_out_of_jail_card -= 1
+                user.prison = None
+        else:
+            return Response("Użytkownik nie ma prawa ruchu", status=403)
+
+        return Response("Użytkownik wyszedł z więzienia.")
+
+
+class CountGetOutOfJailCard(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PlayingUserSerializer
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = PlayingUser.objects.get(user=request.user)
+        except PlayingUser.DoesNotExist:
+            return Response("Nieprawidłowy użytkownik", status=403)
+
+        if user.isActive:
+            return Response({"jail-card": user.get_out_of_jail_card})
+        else:
+            return Response("Podany użytkownik nie jest aktywny", status=406)
+
 
 
 class LobbyView(TemplateView):

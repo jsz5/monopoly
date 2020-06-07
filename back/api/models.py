@@ -170,7 +170,9 @@ class PlayingUser(models.Model):
         null=True,
         blank=True,
     )
+    dice = models.BooleanField(verbose_name=_("Rzut kostką"), default=False)
     prison = JSONField(verbose_name=_("Więzienie"), null=True, blank=True)
+    get_out_of_jail_card = models.IntegerField(verbose_name=_("Karta wyjdź z więzienia"), default=0)
 
     class Meta:
         verbose_name = _("Grający użytkownicy")
