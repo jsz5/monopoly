@@ -180,7 +180,7 @@ class DiceRollView(ListAPIView):
             self.user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
             return Response("Nieprawidłowy użytkownik", status=403)
-        if (self.user.prison and self.user.prison["checked"]) or not self.user.dice:
+        if (self.user.prison and self.user.prison["checked"]) or self.user.dice:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
 
         if self.user.isActive and self.user.isPlaying:
@@ -216,7 +216,7 @@ class DiceRollView(ListAPIView):
                 return Response("Przegrana gra")
 
             self.user.field = self.field
-            self.user.dice = False
+            self.user.dice = True
             self.user.save()
 
             return Response(self.response)
@@ -306,6 +306,7 @@ class DiceRollView(ListAPIView):
         self.card_data = CardSerializer(card).data
 
         self.parameter = self.card_data["parameter"]
+        print(self.card_data["action_id"])
         if self.card_data["action_id"] == 1:
             # MOVE
             # TODO: TEST
@@ -437,7 +438,6 @@ class CountGetOutOfJailCard(APIView):
             return Response({"jail-card": user.get_out_of_jail_card})
         else:
             return Response("Podany użytkownik nie jest aktywny", status=406)
-
 
 
 class LobbyView(TemplateView):

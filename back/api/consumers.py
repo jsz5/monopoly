@@ -169,7 +169,7 @@ class BoardConsumer(WebsocketConsumer):
         playing_user.save()
         new_playing_user = PlayingUser.objects.get(place=next_place)
         new_playing_user.isPlaying = True
-        new_playing_user.dice = True
+        new_playing_user.dice = False
         new_playing_user.save()
 
     def __send_turn(self):

@@ -53,10 +53,6 @@ class TokenAuthMiddlewareInstance:
         close_connections()
         headers = dict(self.scope['headers'])
 
-        import pprint
-        pp = pprint.PrettyPrinter(depth=6)
-        pp.pprint(headers)
-
         query_string = self.scope['query_string']
         # Login with TOKEN
         try:
