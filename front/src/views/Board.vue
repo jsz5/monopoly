@@ -8,7 +8,7 @@
                 <v-row :key="boardKey">
 
 
-                    <div class="first_part_board" >
+                    <div class="first_part_board">
                         <v-sheet
                                 :width="field.width"
                                 :height="field.height"
@@ -43,7 +43,7 @@
                         </v-sheet>
                     </div>
                     <div class="middle_part">
-                        <div class="second_part_board" >
+                        <div class="second_part_board">
                             <v-sheet
                                     :width="field.width"
                                     :height="field.height"
@@ -112,7 +112,7 @@
                                 </v-card-actions>
                             </v-container>
                         </v-container>
-                        <div class="fourth_part_board" >
+                        <div class="fourth_part_board">
                             <v-sheet
                                     :width="field.width"
                                     :height="field.height"
@@ -145,7 +145,7 @@
                         </div>
                     </div>
 
-                    <div class="third_part_board" >
+                    <div class="third_part_board">
                         <v-sheet
                                 :width="field.width"
                                 :height="field.height"
@@ -496,6 +496,8 @@
                     case "update":
                         console.log(msg.board);
                         this.boardConfig = msg.board;
+                        this.configureBoard()
+                        this.boardKey += 1
                         // this.boardConfig = Object.assign({}, this.boardConfig, msg.board)
                         // this.attachBoard(msg.board);
                         // this.boardConfig = JSON.parse(JSON.stringify(msg.board));
