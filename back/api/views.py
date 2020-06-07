@@ -189,15 +189,15 @@ class DiceRollView(ListAPIView):
             self.user = PlayingUser.objects.get(user=request.user)
         except PlayingUser.DoesNotExist:
             return Response("Nieprawidłowy użytkownik", status=403)
-        if (self.user.prison and self.user.prison["checked"]) or self.user.dice:
+        if  self.user.dice:
             return Response("Użytkownik nie ma prawa ruchu", status=403)
 
         if self.user.isActive and self.user.isPlaying:
             if self.user.prison:
-                prison = self.user.prison["queue"] - 1
-                self.user.prison = {"checked": True, "queue": prison}
+                self.user.prison -= 1
+                self.user.dice=True
                 self.user.save()
-                return Response(f"Jesteś w więzieniu. Zostało kolejek {prison}")
+                return Response(f"Jesteś w więzieniu. Zostało kolejek { self.user.prison}")
             field_count = Field.objects.all().count()
             if int(self.user.field.pk) + self.dice > field_count:
                 self.user.budget += 2000
@@ -249,7 +249,7 @@ class DiceRollView(ListAPIView):
             response['action'] = 'pay tax'
             response['amount'] = to_pay
         elif self.field.field_type_id == 5:
-            self.user.prison = {"queue": 2, "checked": True}
+            self.user.prison = 2
             self.move(11)
             self.user.save()
             response['action'] = 'go to jail'
@@ -791,6 +791,8 @@ class TransactionsView(ListCreateAPIView):
             request.data["buyer"] = request.user.id
         else:
             request.data["seller"] = request.user.id
+        if  request.data["buyer"] == request.data["seller"]:
+            return Response("Posiadasz już to pole.",status=403)
         print(request.data)
         return super().post(request, *args, **kwargs)
 
@@ -819,7 +821,7 @@ class TransactionUpdateView(APIView):
                         playingUser=seller, field=transaction.field
                     ).count()
                 )
-                return Response("Nie można dokonać transakcji.", status=500)
+                return Response("Przekroczono budżet lub sprzedający nie posiada już tego pola.", status=403)
 
             buyer.budget -= transaction.price
             buyer.save()
