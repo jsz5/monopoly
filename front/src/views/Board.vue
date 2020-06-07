@@ -153,7 +153,7 @@
                                     :key="index"
                                     :color="field.color"
                                     class="third_quarter_fields"
-                                    
+
                             >
                                        <span style=" outline: 3px solid blue;">
                    {{field.id}}
