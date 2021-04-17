@@ -1,6 +1,5 @@
 # Monopoly
-Aplikacja webowa umożliwiająca grę w monopoly 2-4 osób w czasie rzeczywistym.
-
+Aplikacja webowa umożliwiająca grę w monopoly 2-4 osób w czasie rzeczywistym realizowana w ramach kursu z pythona na 6 semestrze studiów.
 ### Instalacja
 
 Do odpalenia projektu trzeba pobrać dockera.
