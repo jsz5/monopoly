@@ -1,4 +1,5 @@
 # Monopoly
+Aplikacja webowa umożliwiająca grę w monopoly 2-4 osób w czasie rzeczywistym.
 
 ### Instalacja
 
@@ -31,8 +32,7 @@ Do odpalenia projektu trzeba pobrać dockera.
 - Wersja pythona: 3.8.2
 - Adres: http://localhost:8080
 
-Konfiguracyjne rzeczy przychowujemy w pliku `settings_local.py`,
-którego nie dodajemy do gita.
+Konfiguracyjne zmienne w pliku `settings_local.py`
 
 ### Baza danych
 
